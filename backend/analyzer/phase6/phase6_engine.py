@@ -21,36 +21,45 @@ class Phase6Engine:
         self.kaggle = KaggleSuggester()
     
     def analyze(self, report: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Execute complete Phase 6 analysis with clean architecture.
-        
-        Args:
-            report: Complete bias analysis report from Phase 4
-            
-        Returns:
-            Comprehensive ecosystem intelligence and recommendations
-        """
+        """Complete Phase 6 analysis with strict validation."""
         print("=== PHASE 6: Dataset Intelligence & Ecosystem Analysis ===")
         
-        # Step 1: Structural profiling (no hardcoding)
+        # Strict risk validation - NO silent fallbacks
+        if "overall_risk" not in report:
+            raise ValueError("Phase6: overall_risk missing from report")
+        
+        risk_data = report["overall_risk"]
+        if not isinstance(risk_data, dict):
+            raise ValueError("Phase6: overall_risk is not a dictionary")
+        
+        if "risk_percentage" not in risk_data:
+            raise ValueError("Phase6: risk_percentage missing from overall_risk")
+        
+        if "risk_level" not in risk_data:
+            raise ValueError("Phase6: risk_level missing from overall_risk")
+        
+        risk_percentage = risk_data["risk_percentage"]
+        risk_level = risk_data["risk_level"]
+        
+        print(f"DEBUG ENGINE: Valid risk data - percentage: {risk_percentage}%, level: {risk_level}")
+        
+        # Step 1: Create structural profile
         print("Step 1: Creating structural profile...")
         profile = self.profiler.profile(report)
+        
         print(f"DEBUG ENGINE: Profile type: {type(profile)}")
         print(f"DEBUG ENGINE: Profile value: {profile}")
-        if isinstance(profile, dict):
-            print(f"DEBUG ENGINE: Profile keys: {list(profile.keys())}")
-        else:
-            print(f"DEBUG ENGINE: ERROR: Profile is not a dict!")
+        print(f"DEBUG ENGINE: Profile keys: {list(profile.keys()) if isinstance(profile, dict) else 'Not a dict'}")
         
-        # Step 2: Risk benchmarking (correct percentile)
+        # Step 2: Benchmarking
         print("Step 2: Benchmarking risk against ecosystem...")
         benchmark_comparison = self.benchmark.generate_benchmark_comparison(report)
         
-        # Step 3: Kaggle suggestions (archetype-based)
+        # Step 3: Find similar datasets
         print("Step 3: Finding similar dataset archetypes...")
-        similar_datasets = self.kaggle.suggest(profile)
+        similar_datasets = self.kaggle_suggester.suggest(profile)
         
-        # Step 4: Recommendations (risk-based)
+        # Step 4: Generate recommendations
         print("Step 4: Generating risk-based recommendations...")
         recommendations = self.recommender.generate(report, profile)
         
@@ -74,17 +83,17 @@ class Phase6Engine:
                 "no_hardcoding": True,
                 "features": {
                     "structural_profiling": True,
-                    "no_hardcoding": True,
-                    "correct_percentile": True,
-                    "archetype_based": True
+                    "ecosystem_benchmarking": True,
+                    "domain_aware_suggestions": True,
+                    "risk_validation": "strict"
                 }
             }
         }
         
         print("✅ Phase 6 Analysis Complete!")
-        print(f"Profile: {profile['fingerprint']}")
-        print(f"Risk Percentile: {benchmark_comparison['benchmark_comparison']['percentile']}%")
-        print(f"Market Position: {benchmark_comparison['benchmark_comparison']['position']}")
+        print(f"Profile: {profile.get('fingerprint', 'Unknown')}")
+        print(f"Risk Percentile: {results['risk_percentile']}%")
+        print(f"Market Position: {results['market_position']}")
         print(f"Similar Datasets: {len(similar_datasets)} found")
         
         return results

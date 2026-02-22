@@ -30,7 +30,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(report)
+        body: JSON.stringify({ report: report })  // Wrap in Phase6Request format
       })
 
       if (!response.ok) {
@@ -726,7 +726,9 @@ function App() {
               <h4>📋 Executive Summary</h4>
               <div className="executive-summary">
                 <div className="executive-summary-text">
-                  {phase6Report.results?.executive_summary || 'No executive summary available'}
+                  {typeof phase6Report.results?.executive_summary === 'string' 
+                    ? phase6Report.results.executive_summary 
+                    : phase6Report.results?.executive_summary?.overall_assessment?.interpretation || 'No executive summary available'}
                 </div>
                 
                 <div className="metric-list">

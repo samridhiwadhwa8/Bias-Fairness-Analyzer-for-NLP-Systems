@@ -10,6 +10,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
+from pydantic import BaseModel
+
+# Define Phase 6 request model
+class Phase6Request(BaseModel):
+    report: Dict[str, Any]
 
 # Import new clean Phase 6 engine
 from analyzer.phase6.phase6_engine import Phase6Engine
@@ -31,34 +36,40 @@ async def test_endpoint():
 
 
 @router.post("/analyze")
-async def analyze_dataset_intelligence(report: Dict[str, Any]):
-    """
-    Analyze dataset intelligence with clean structural profiling.
-    
-    Args:
-        report: Complete bias analysis report from Phase 4
-        
-    Returns:
-        Comprehensive dataset intelligence and recommendations
-    """
+async def analyze_dataset_intelligence(request: Phase6Request):
+    """Analyze dataset intelligence and ecosystem positioning."""
     try:
-        if not report:
-            raise HTTPException(status_code=400, detail="Report data is required")
+        print(" Phase 6 API called - Starting analysis...")
+        print(f"DEBUG API: Request received: {request}")
         
+        # Get the full report from Phase 4
+        report = request.report
         print(f"DEBUG API: Received report type: {type(report)}")
         print(f"DEBUG API: Received report keys: {list(report.keys()) if isinstance(report, dict) else 'Not a dict'}")
-        print(f"DEBUG API: Report overview: {report.get('dataset_overview', {})}")
         
-        # Execute Phase 6 analysis
+        if not report:
+            print("DEBUG API: Report is empty or None")
+            raise HTTPException(status_code=400, detail="No report data provided")
+        
+        # Initialize Phase 6 engine
+        print(" Initializing Phase 6 engine...")
+        phase6_engine = Phase6Engine()
+        
+        # Run Phase 6 analysis
+        print(" Running Phase 6 analysis...")
         results = phase6_engine.analyze(report)
-        print(f"DEBUG API: Phase 6 results type: {type(results)}")
-        print(f"DEBUG API: Phase 6 results keys: {list(results.keys()) if isinstance(results, dict) else 'Not a dict'}")
         
-        print(f"DEBUG API: Profile from results: {type(results.get('profile', 'NOT_FOUND'))}")
-        if isinstance(results, dict) and isinstance(results.get('profile'), dict):
-            print(f"DEBUG API: Profile keys: {list(results['profile'].keys())}")
-        else:
-            print(f"DEBUG API: Profile is not a dict or is missing")
+        print(f"DEBUG API: Results type: {type(results)}")
+        print(f"DEBUG API: Results keys: {list(results.keys()) if isinstance(results, dict) else 'Not a dict'}")
+        
+        if not results:
+            print("DEBUG API: Results is empty or None")
+            raise HTTPException(status_code=500, detail="Phase 6 analysis returned no results")
+        
+        # Validate results structure
+        if not isinstance(results, dict):
+            print(f"DEBUG API: Results is not a dict: {results}")
+            raise HTTPException(status_code=500, detail="Phase 6 analysis returned invalid data structure")
         
         response = {
             "success": True,
@@ -68,7 +79,8 @@ async def analyze_dataset_intelligence(report: Dict[str, Any]):
         }
         
         print(f"DEBUG API: Final response type: {type(response)}")
-        print(f"DEBUG API: Final response: {response}")
+        print(f"DEBUG API: Final response structure: {response}")
+        print(" Phase 6 API completed successfully!")
         
         return response
         

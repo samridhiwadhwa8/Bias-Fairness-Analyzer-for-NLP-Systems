@@ -96,32 +96,61 @@ class DatasetProfiler:
         else:
             balance = "highly_imbalanced"
         
-        # Domain detection using weighted scoring across ALL columns
-        keywords = {
-            "finance": ["loan", "credit", "bank"],  # Removed "income" to avoid false positives
-            "health": ["patient", "medical", "disease"],
-            "social_media": ["tweet", "post", "comment"],
-            "ecommerce": ["product", "price", "order"],
-            "demographic": ["age", "gender", "race", "country", "education", "marital", "workclass"]
-        }
-        
-        score = {k: 0 for k in keywords}
-        
-        # Score across ALL available columns
-        for col in columns:
-            col_lower = col.lower()
-            for domain, words in keywords.items():
-                for w in words:
-                    if w in col_lower:
-                        score[domain] += 1
-        
-        print(f"DEBUG DOMAIN: Column scores: {score}")
-        
-        # Return "general" if highest score is less than 2 matches
-        best = max(score, key=score.get)
-        domain = best if score[best] >= 2 else "general"
-        
-        print(f"DEBUG DOMAIN: Best domain: {domain} (score: {score[best]})")
+        # Domain detection with NLP-specific logic
+        if dataset_type == "nlp":
+            # NLP datasets need special domain detection
+            print(f"DEBUG DOMAIN: NLP dataset detected, using NLP-specific domain detection")
+            
+            # Check for NLP-specific keywords in column names
+            nlp_keywords = {
+                "social_media": ["tweet", "post", "comment", "text", "message"],
+                "reviews": ["review", "rating", "feedback", "opinion"],
+                "news": ["article", "headline", "news", "journal"],
+                "ecommerce": ["product", "price", "order", "purchase"]
+            }
+            
+            score = {k: 0 for k in nlp_keywords}
+            
+            for col in columns:
+                col_lower = col.lower()
+                for domain, words in nlp_keywords.items():
+                    for w in words:
+                        if w in col_lower:
+                            score[domain] += 1
+            
+            print(f"DEBUG DOMAIN NLP: Column scores: {score}")
+            
+            best = max(score, key=score.get)
+            domain = best if score[best] > 0 else "general_nlp"
+            
+            print(f"DEBUG DOMAIN NLP: Best domain: {domain} (score: {score[best]})")
+        else:
+            # Tabular datasets use keyword scoring
+            keywords = {
+                "finance": ["loan", "credit", "bank"],  # Removed "income" to avoid false positives
+                "health": ["patient", "medical", "disease"],
+                "social_media": ["tweet", "post", "comment"],
+                "ecommerce": ["product", "price", "order"],
+                "demographic": ["age", "gender", "race", "country", "education", "marital", "workclass"]
+            }
+            
+            score = {k: 0 for k in keywords}
+            
+            # Score across ALL available columns
+            for col in columns:
+                col_lower = col.lower()
+                for domain, words in keywords.items():
+                    for w in words:
+                        if w in col_lower:
+                            score[domain] += 1
+            
+            print(f"DEBUG DOMAIN TABULAR: Column scores: {score}")
+            
+            # Return "general" if highest score is less than 2 matches
+            best = max(score, key=score.get)
+            domain = best if score[best] >= 2 else "general"
+            
+            print(f"DEBUG DOMAIN TABULAR: Best domain: {domain} (score: {score[best]})")
         
         print(f"DEBUG PROFILER: Detected - size: {size}, task: {task}, balance: {balance}, domain: {domain}")
         
@@ -131,7 +160,11 @@ class DatasetProfiler:
             "finance": "fin", 
             "health": "health",
             "social_media": "soc",
-            "general": "gen"
+            "general": "gen",
+            "general_nlp": "gen_nlp",
+            "reviews": "rev",
+            "news": "news",
+            "ecommerce": "ecom"
         }
         
         task_codes = {
