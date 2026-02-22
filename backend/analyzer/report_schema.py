@@ -201,7 +201,7 @@ class BiasAnalysisReport:
                 
                 bias_analysis = {
                     'demographic_bias': {
-                        'detected': demo_score > 0.1,  # Only flag as detected if score > threshold
+                        'detected': len(demo_cols) > 0,
                         'score': round(demo_score, 3),
                         'columns': columns
                     },

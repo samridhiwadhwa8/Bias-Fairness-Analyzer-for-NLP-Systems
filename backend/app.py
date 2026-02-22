@@ -52,6 +52,10 @@ app.include_router(phase5_router)
 # Include Phase 6 routes
 app.include_router(phase6_router)
 
+# Include Phase 7 routes
+from api.phase7_routes import router as phase7_router
+app.include_router(phase7_router)
+
 # Initialize analyzer components
 column_detector = ColumnDetector()
 dataset_analyzer = DatasetAnalyzerModule()
@@ -181,11 +185,16 @@ async def analyze_dataset(file: UploadFile = File(...)):
                 sentiment_score=bias_results.get('sentiment_score', 0),
                 class_imbalance_ratio=class_imbalance.get('imbalance_ratio', 0),
                 dataset_type=dataset_type,
-                has_demographic_columns=False
+                has_demographic_columns=len(demographic_cols) > 0
             )
-        else:  # Tabular
-            # Extract actual demographic score from bias analysis
-            demo_score = bias_results.get('demographic_score', 0.0)
+        else:
+            # Ensure demographic_score is a float
+            demo_score_raw = bias_results.get('demographic_score', 0)
+            try:
+                demo_score = float(str(demo_score_raw))
+            except (ValueError, TypeError):
+                demo_score = 0.0
+                print(f"Warning: Could not convert demographic_score '{demo_score_raw}' to float, using 0.0")
             
             risk_assessment = risk_engine.calculate_risk(
                 demographic_score=demo_score,

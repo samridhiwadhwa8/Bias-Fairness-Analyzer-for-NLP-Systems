@@ -7,6 +7,7 @@ function App() {
   const [report, setReport] = useState(null)
   const [phase5Report, setPhase5Report] = useState(null)
   const [phase6Report, setPhase6Report] = useState(null)
+  const [phase7Report, setPhase7Report] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -28,6 +29,17 @@ function App() {
       return response.data
     } catch (err) {
       console.error('Phase 6 analysis error:', err)
+      return null
+    }
+  }
+
+  const analyzePhase7 = async (report) => {
+    try {
+      const response = await axios.post('http://localhost:8000/phase7/generate', report)
+      console.log('Phase 7 analysis received:', response.data)
+      return response.data
+    } catch (err) {
+      console.error('Phase 7 analysis error:', err)
       return null
     }
   }
@@ -65,6 +77,10 @@ function App() {
       // Call Phase 6 analysis
       const phase6Data = await analyzePhase6(response.data)
       setPhase6Report(phase6Data)
+      
+      // Call Phase 7 analysis
+      const phase7Data = await analyzePhase7(response.data)
+      setPhase7Report(phase7Data)
       
       setLoading(false)
     } catch (err) {
@@ -485,20 +501,20 @@ function App() {
             <div className="metric-list">
               <div className="metric-item">
                 <span className="metric-label">Overall Assessment</span>
-                <span className={`metric-value ${getAssessmentColor(phase5Report.executive_summary?.overall_assessment)}`}>
-                  {phase5Report.executive_summary?.overall_assessment}
+                <span className={`metric-value ${getAssessmentColor(phase5Report.results?.executive_summary?.overall_assessment)}`}>
+                  {phase5Report.results?.executive_summary?.overall_assessment}
                 </span>
               </div>
               <div className="metric-item">
                 <span className="metric-label">Deployment Action</span>
                 <span className="metric-value">
-                  {phase5Report.interpretation?.deployment_action}
+                  {phase5Report.results?.interpretation?.deployment_action}
                 </span>
               </div>
               <div className="metric-item">
                 <span className="metric-label">Timeline</span>
                 <span className="metric-value">
-                  {phase5Report.interpretation?.deployment_timeline}
+                  {phase5Report.results?.interpretation?.deployment_timeline}
                 </span>
               </div>
             </div>
@@ -513,14 +529,14 @@ function App() {
             <div className="metric-list">
               <div className="metric-item">
                 <span className="metric-label">Decision</span>
-                <span className={`metric-value ${getDecisionColor(phase5Report.deployment?.deployment_decision)}`}>
-                  {phase5Report.deployment?.deployment_decision}
+                <span className={`metric-value ${getDecisionColor(phase5Report.results?.deployment?.deployment_decision)}`}>
+                  {phase5Report.results?.deployment?.deployment_decision}
                 </span>
               </div>
               <div className="metric-item">
                 <span className="metric-label">Confidence</span>
                 <span className="metric-value">
-                  {Math.round((phase5Report.deployment?.confidence_score || 0) * 100)}%
+                  {Math.round((phase5Report.results?.deployment?.confidence_score || 0) * 100)}%
                 </span>
               </div>
             </div>
@@ -533,7 +549,7 @@ function App() {
               <h2 className="card-title">Mitigation Recommendations</h2>
             </div>
             <div className="mitigation-list">
-              {phase5Report.mitigation?.recommended_actions?.map((action, idx) => (
+              {phase5Report.results?.mitigation?.recommended_actions?.map((action, idx) => (
                 <div key={idx} className="mitigation-item">
                   <span className="mitigation-bullet">•</span>
                   <span className="mitigation-text">{action}</span>
@@ -551,14 +567,14 @@ function App() {
             <div className="metric-list">
               <div className="metric-item">
                 <span className="metric-label">Regulatory Risk</span>
-                <span className={`metric-value ${getComplianceColor(phase5Report.compliance?.regulatory_risk?.level)}`}>
-                  {phase5Report.compliance?.regulatory_risk?.level}
+                <span className={`metric-value ${getComplianceColor(phase5Report.results?.compliance?.regulatory_risk?.level)}`}>
+                  {phase5Report.results?.compliance?.regulatory_risk?.level}
                 </span>
               </div>
               <div className="metric-item">
                 <span className="metric-label">Review Required</span>
                 <span className="metric-value">
-                  {phase5Report.compliance?.regulatory_risk?.review_required ? 'Yes' : 'No'}
+                  {phase5Report.results?.compliance?.regulatory_risk?.review_required ? 'Yes' : 'No'}
                 </span>
               </div>
             </div>
@@ -666,11 +682,62 @@ function App() {
         </div>
       )}
 
-        {/* Action Button */}
-        <div style={{ textAlign: 'center', marginTop: '3rem' }}>
-          <button 
-            onClick={() => setReport(null)}
-            className="btn btn-primary"
+      {/* Phase 7 Dataset Governance */}
+      {phase7Report && (
+        <div className="phase5-section">
+          <h2 className="section-title">📋 Dataset Governance Report</h2>
+          
+          {/* Report Actions */}
+          <div className="card">
+            <div className="card-header">
+              <Download className="card-icon" />
+              <h2 className="card-title">Report Actions</h2>
+            </div>
+            <div className="mitigation-list">
+              <button 
+                onClick={() => window.open(`http://localhost:8000/phase7/download/${phase7Report.results?.pdf_path?.split('/').pop()}`, '_blank')}
+                className="mitigation-item"
+                style={{ cursor: 'pointer', padding: '10px', margin: '5px', border: '1px solid #ddd', borderRadius: '5px', background: '#f8f9fa' }}
+              >
+                <span className="mitigation-bullet">📄</span>
+                <span className="mitigation-text">Download Full Report (PDF)</span>
+              </button>
+              <button 
+                onClick={() => window.open(`http://localhost:8000/phase7/download-visuals`, '_blank')}
+                className="mitigation-item"
+                style={{ cursor: 'pointer', padding: '10px', margin: '5px', border: '1px solid #ddd', borderRadius: '5px', background: '#f8f9fa' }}
+              >
+                <span className="mitigation-bullet">📊</span>
+                <span className="mitigation-text">Download Visual Insights (ZIP)</span>
+              </button>
+            </div>
+          </div>
+          
+          {/* Visual Insights Summary */}
+          {phase7Report.results?.visual_paths && phase7Report.results.visual_paths.length > 0 && (
+            <div className="card">
+              <div className="card-header">
+                <BarChart3 className="card-icon" />
+                <h2 className="card-title">Generated Visualizations</h2>
+              </div>
+              <div className="mitigation-list">
+                {phase7Report.results.visual_paths.map((path, idx) => (
+                  <div key={idx} className="mitigation-item">
+                    <span className="mitigation-bullet">•</span>
+                    <span className="mitigation-text">{path.split('/').pop()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Action Button */}
+      <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+        <button 
+          onClick={() => setReport(null)}
+          className="btn btn-primary"
           >
             Analyze Another Dataset
           </button>

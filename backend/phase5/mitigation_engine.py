@@ -93,7 +93,7 @@ class MitigationEngine:
             actions.append("Schedule enhanced monitoring")
         
         # Add demographic-specific actions if detected
-        if overall_risk.get("bias_analysis", {}).get("demographic_bias", {}).get("detected", False):
+        if bias.get("demographic_bias", {}).get("detected", False):
             actions.append("Review protected attribute handling in data pipeline")
         
         return actions

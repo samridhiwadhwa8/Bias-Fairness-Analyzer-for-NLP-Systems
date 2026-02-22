@@ -76,31 +76,19 @@ class Phase5Engine:
             f"Risk Level: {risk_level} ({interpretation.get('risk_percentage', 0)}%)",
             f"Deployment Decision: {deployment_decision}",
             f"Regulatory Risk: {regulatory_risk}",
-            f"Mitigation Complexity: {mitigation.get('implementation_complexity', 'Low')}",
-            f"Model Performance: {mitigation.get('model_performance', 'Low')}"
+            f"Mitigation Complexity: {mitigation.get('implementation_complexity', 'Low')}"
         ]
         
         # Immediate actions
         immediate_actions = []
-        
-        # Add risk-based actions
-        if risk_level == "High":
-            immediate_actions.append("Initiate comprehensive mitigation plan")
-        elif risk_level == "Moderate":
-            immediate_actions.append("Implement targeted bias mitigation")
-            immediate_actions.append("Schedule enhanced monitoring")
-        
-        # Add deployment-specific actions
         if "Comprehensive Mitigation Required" in deployment_decision:
             immediate_actions.append("Initiate comprehensive mitigation plan")
-        elif "Performance Improvement Required" in deployment_decision:
+        if "Performance Improvement Required" in deployment_decision:
             immediate_actions.append("Focus on model performance improvement")
-        elif "Deploy" in deployment_decision or "Deploy with" in deployment_decision:
-            immediate_actions.append("Proceed with deployment monitoring")
-        
-        # Add demographic-specific actions
-        if bias.get("demographic_bias", {}).get("detected", False):
-            immediate_actions.append("Review protected attribute handling in data pipeline")
+        if regulatory_risk in ["Medium", "High"]:
+            immediate_actions.append("Initiate compliance review")
+        if mitigation.get("priority_actions"):
+            immediate_actions.extend(mitigation.get("priority_actions", [])[:2])
         
         # Timeline overview
         timeline = interpretation.get("deployment_timeline", "Immediate")
