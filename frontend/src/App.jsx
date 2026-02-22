@@ -21,52 +21,20 @@ function App() {
     }
   }
 
-  const analyzeDatasetIntelligence = async (report) => {
+  const analyzePhase6 = async (report) => {
     try {
-      console.log('🔍 Analyzing dataset intelligence with clean architecture...')
-      
-      const response = await fetch('http://localhost:8000/phase6/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ report: report })  // Wrap in Phase6Request format
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('❌ Phase 6 API Error:', errorText)
-        throw new Error(`Phase 6 analysis failed: ${response.statusText} - ${errorText}`)
-      }
-
-      const result = await response.json()
-      console.log('📊 Phase 6 Results received:', result)
-      
-      if (result.success) {
-        console.log('✅ Phase 6 analysis successful - setting report state')
-        console.log('🔍 Setting phase6Report to:', result)
-        setPhase6Report(result)
-        
-        // Force a re-render by checking state after a small delay
-        setTimeout(() => {
-          console.log('🔍 Checking phase6Report after timeout:', phase6Report)
-        }, 100)
-      } else {
-        console.error('❌ Phase 6 analysis failed:', result)
-        setPhase6Report({ success: false, error: 'Analysis failed' })
-      }
-    } catch (error) {
-      console.error('❌ Error in Phase 6 analysis:', error)
-      setPhase6Report({ success: false, error: error.message })
+      const response = await axios.post('http://localhost:8000/phase6/analyze', report)
+      console.log('Phase 6 analysis received:', response.data)
+      return response.data
+    } catch (err) {
+      console.error('Phase 6 analysis error:', err)
+      return null
     }
   }
 
   const onAnalyze = useCallback(async (file) => {
     setLoading(true)
     setError('')
-    
-    // Reset Phase 6 state only when starting new analysis
-    setPhase6Report(null)
     
     const formData = new FormData()
     formData.append('file', file)
@@ -81,6 +49,7 @@ function App() {
       
       console.log('Clean report received:', response.data)
       console.log('Component scores:', response.data.overall_risk?.component_scores)
+      console.log('Individual components:')
       console.log('  Demographic:', response.data.overall_risk?.component_scores?.demographic)
       console.log('  Linguistic:', response.data.overall_risk?.component_scores?.linguistic)
       console.log('  Toxicity:', response.data.overall_risk?.component_scores?.toxicity)
@@ -93,20 +62,9 @@ function App() {
       const phase5Data = await analyzeReport(response.data)
       setPhase5Report(phase5Data)
       
-      // Call Phase 6 analysis - only if Phase 5 completed
-      if (phase5Data) {
-        console.log('🚀 Starting Phase 6 analysis after Phase 5 completion')
-        const phase6Data = await analyzeDatasetIntelligence(response.data)
-        console.log('🎯 Phase 6 data received from analyzeDatasetIntelligence:', phase6Data)
-        
-        // Additional safety check - only set if data exists
-        if (phase6Data && phase6Data.success) {
-          setPhase6Report(phase6Data)
-          console.log('✅ Phase 6 state set successfully')
-        } else {
-          console.error('❌ Phase 6 data invalid:', phase6Data)
-        }
-      }
+      // Call Phase 6 analysis
+      const phase6Data = await analyzePhase6(response.data)
+      setPhase6Report(phase6Data)
       
       setLoading(false)
     } catch (err) {
@@ -149,8 +107,6 @@ function App() {
   }
 
   const getAssessmentColor = (assessment) => {
-    if (assessment?.includes('EXCELLENT')) return 'risk-score-low'
-    if (assessment?.includes('GOOD')) return 'risk-score-low'
     if (assessment?.includes('HIGH SEVERITY')) return 'risk-score-high'
     if (assessment?.includes('ELEVATED SEVERITY')) return 'risk-score-moderate'
     return 'risk-score-low'
@@ -167,25 +123,6 @@ function App() {
     if (level === 'High') return 'risk-score-high'
     if (level === 'Medium') return 'risk-score-moderate'
     return 'risk-score-low'
-  }
-
-  const getPercentileColor = (percentile) => {
-    if (percentile >= 80) return 'risk-score-low'
-    if (percentile >= 60) return 'risk-score-moderate'
-    return 'risk-score-high'
-  }
-
-  const getPositionColor = (position) => {
-    if (position === 'leader') return 'risk-score-low'
-    if (position === 'above_average') return 'risk-score-moderate'
-    if (position === 'improvement_needed') return 'risk-score-high'
-    return 'risk-score-low'
-  }
-
-  const getAlternativeRiskColor = (risk) => {
-    if (risk === 'low') return 'risk-score-low'
-    if (risk === 'medium') return 'risk-score-moderate'
-    return 'risk-score-high'
   }
 
   if (loading) {
@@ -629,179 +566,105 @@ function App() {
         </div>
       )}
 
-      {/* Phase 6: Dataset Intelligence & Ecosystem Analysis */}
-      {phase6Report && phase6Report.success ? (
-        <div className="analysis-section phase6-section">
-          <div className="section-header">
-            <h3>🌍 Dataset Intelligence & Ecosystem Analysis</h3>
-          </div>
+      {/* Phase 6 Dataset Intelligence */}
+      {phase6Report && (
+        <div className="phase5-section">
+          <h2 className="section-title">📊 Dataset Intelligence & Ecosystem Analysis</h2>
           
-          <div className="phase6-content">
-            {/* Dataset Profile */}
-            <div className="phase6-subsection">
-              <h4>📊 Dataset Profile</h4>
-              <div className="profile-grid">
-                <div className="profile-item">
-                  <span className="profile-label">Fingerprint</span>
-                  <span className="profile-value">{phase6Report.results?.profile?.fingerprint || 'Unknown'}</span>
-                </div>
-                <div className="profile-item">
-                  <span className="profile-label">Domain</span>
-                  <span className="profile-value">{phase6Report.results?.profile?.domain || 'Unknown'}</span>
-                </div>
-                <div className="profile-item">
-                  <span className="profile-label">Task Type</span>
-                  <span className="profile-value">{phase6Report.results?.profile?.task || 'Unknown'}</span>
-                </div>
-                <div className="profile-item">
-                  <span className="profile-label">Size Category</span>
-                  <span className="profile-value">{phase6Report.results?.profile?.size || 'Unknown'}</span>
-                </div>
+          {/* Dataset Profile */}
+          <div className="card">
+            <div className="card-header">
+              <Database className="card-icon" />
+              <h2 className="card-title">Dataset Profile</h2>
+            </div>
+            <div className="metric-list">
+              <div className="metric-item">
+                <span className="metric-label">Fingerprint</span>
+                <span className="metric-value">{phase6Report.results?.profile?.fingerprint}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Domain</span>
+                <span className="metric-value">{phase6Report.results?.profile?.domain}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Task</span>
+                <span className="metric-value">{phase6Report.results?.profile?.task}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Size</span>
+                <span className="metric-value">{phase6Report.results?.profile?.size}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Balance</span>
+                <span className="metric-value">{phase6Report.results?.profile?.balance}</span>
               </div>
             </div>
-            
-            {/* Ecosystem Benchmarking */}
-            <div className="phase6-subsection">
-              <h4>📈 Ecosystem Benchmarking</h4>
-              <div className="benchmark-grid">
-                <div className="benchmark-item">
-                  <span className="benchmark-label">Risk Percentile</span>
-                  <span className={`benchmark-value ${getPercentileColor(phase6Report.results?.risk_percentile)}`}>
-                    {phase6Report.results?.risk_percentile || 0}%
-                  </span>
-                </div>
-                <div className="benchmark-item">
-                  <span className="benchmark-label">Market Position</span>
-                  <span className={`benchmark-value ${getPositionColor(phase6Report.results?.market_position)}`}>
-                    {phase6Report.results?.market_position || 'Unknown'}
-                  </span>
-                </div>
-                <div className="benchmark-item">
-                  <span className="benchmark-label">Similar Datasets</span>
-                  <span className="benchmark-value">
-                    {phase6Report.results?.similar_datasets?.length || 0} found
-                  </span>
-                </div>
+          </div>
+
+          {/* Risk Percentile */}
+          <div className="card">
+            <div className="card-header">
+              <BarChart3 className="card-icon" />
+              <h2 className="card-title">Risk Percentile</h2>
+            </div>
+            <div className="metric-list">
+              <div className="metric-item">
+                <span className="metric-label">Percentile</span>
+                <span className={`metric-value ${getScoreColor(phase6Report.results?.risk_percentile / 100)}`}>
+                  {phase6Report.results?.risk_percentile}th
+                </span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Market Position</span>
+                <span className="metric-value">{phase6Report.results?.market_position}</span>
               </div>
             </div>
-            
-            {/* Alternative Datasets */}
-            <div className="phase6-subsection">
-              <h4>🔗 Alternative Datasets</h4>
-              <div className="alternatives-list">
-                {phase6Report.results?.similar_datasets?.map((alt, index) => (
-                  <div key={index} className="alternative-item">
-                    <div className="alternative-header">
-                      <span className="alternative-name">{alt.name}</span>
-                      <span className={`alternative-risk ${getAlternativeRiskColor(alt.bias_risk)}`}>
-                        {alt.bias_risk} risk
-                      </span>
-                    </div>
-                    <div className="alternative-details">
-                      <span className="alternative-domain">{alt.domain}</span>
-                      <span className="alternative-source">{alt.source}</span>
-                    </div>
-                    <div className="alternative-description">
-                      {alt.description}
-                    </div>
-                    <div className="alternative-advantages">
-                      {alt.advantages?.map((adv, i) => (
-                        <span key={i} className="advantage-tag">{adv}</span>
-                      ))}
-                    </div>
-                    {alt.url && (
-                      <div className="alternative-url">
-                        <a href={alt.url} target="_blank" rel="noopener noreferrer" className="btn-secondary">
-                          View on {alt.source}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                )) || <p>No alternative datasets found</p>}
+          </div>
+
+          {/* Deployment Decision */}
+          <div className="card">
+            <div className="card-header">
+              <Target className="card-icon" />
+              <h2 className="card-title">Deployment Decision</h2>
+            </div>
+            <div className="metric-list">
+              <div className="metric-item">
+                <span className="metric-label">Decision</span>
+                <span className={`metric-value ${getDecisionColor(phase6Report.results?.executive_summary?.deployment_decision)}`}>
+                  {phase6Report.results?.executive_summary?.deployment_decision}
+                </span>
               </div>
             </div>
-            
-            {/* Executive Summary */}
-            <div className="phase6-subsection">
-              <h4>📋 Executive Summary</h4>
-              <div className="executive-summary">
-                <div className="executive-summary-text">
-                  {typeof phase6Report.results?.executive_summary === 'string' 
-                    ? phase6Report.results.executive_summary 
-                    : phase6Report.results?.executive_summary?.overall_assessment?.interpretation || 'No executive summary available'}
-                </div>
-                
-                <div className="metric-list">
-                  <div className="metric-item">
-                    <span className="metric-label">Risk Level</span>
-                    <span className={`metric-value ${getAssessmentColor(phase6Report.results?.risk_assessment?.level)}`}>
-                      {phase6Report.results?.risk_assessment?.level || 'Unknown'}
-                    </span>
-                  </div>
-                  <div className="metric-item">
-                    <span className="metric-label">Risk Percentage</span>
-                    <span className="metric-value">
-                      {phase6Report.results?.risk_assessment?.percentage || 0}%
-                    </span>
-                  </div>
-                  <div className="metric-item">
-                    <span className="metric-label">Deployment Decision</span>
-                    <span className="metric-value">
-                      {phase6Report.results?.deployment_decision || 'Unknown'}
-                    </span>
-                  </div>
-                </div>
-                
-                {phase6Report.results?.evidence_factors && (
-                  <div className="evidence-factors">
-                    <h5>Evidence Factors:</h5>
-                    <div className="evidence-grid">
-                      <div className="evidence-item">
-                        <span className="evidence-label">Imbalance Severity</span>
-                        <span className="evidence-value">{phase6Report.results.evidence_factors.imbalance_severity}</span>
-                      </div>
-                      <div className="evidence-item">
-                        <span className="evidence-label">Demographic Bias Score</span>
-                        <span className="evidence-value">{(phase6Report.results.evidence_factors.demographic_bias_score * 100).toFixed(1)}%</span>
-                      </div>
-                      <div className="evidence-item">
-                        <span className="evidence-label">Risk Percentage</span>
-                        <span className="evidence-value">{phase6Report.results.evidence_factors.risk_percentage}%</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {phase6Report.results?.next_steps?.length > 0 && (
-                  <div className="next-steps">
-                    <h5>Next Steps:</h5>
-                    <ul>
-                      {(Array.isArray(phase6Report.results.next_steps) ? phase6Report.results.next_steps : []).map((step, index) => (
-                        <li key={index}>{step}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+          </div>
+
+          {/* Similar Datasets */}
+          {phase6Report.results?.similar_datasets && phase6Report.results.similar_datasets.length > 0 && (
+            <div className="card">
+              <div className="card-header">
+                <Users className="card-icon" />
+                <h2 className="card-title">Similar Datasets</h2>
               </div>
-            </div>
-            
-            {/* Architecture Info */}
-            <div className="phase6-subsection">
-              <h4>🏗️ Architecture Features</h4>
-              <div className="architecture-features">
-                {Object.entries(phase6Report.results?.metadata?.features || {}).map(([feature, enabled]) => (
-                  <div key={feature} className="feature-item">
-                    <span className={`feature-status ${enabled ? 'enabled' : 'disabled'}`}>
-                      {enabled ? '✅' : '❌'}
+              <div className="mitigation-list">
+                {phase6Report.results.similar_datasets.map((dataset, idx) => (
+                  <div key={idx} className="mitigation-item">
+                    <span className="mitigation-bullet">•</span>
+                    <span className="mitigation-text">
+                      <a 
+                        href={dataset.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ color: '#3b82f6', textDecoration: 'none' }}
+                      >
+                        <strong>{dataset.name}</strong> - {dataset.domain}
+                      </a>
                     </span>
-                    <span className="feature-name">{feature.replace('_', ' ')}</span>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
+          )}
         </div>
-      ) : null}
+      )}
 
         {/* Action Button */}
         <div style={{ textAlign: 'center', marginTop: '3rem' }}>

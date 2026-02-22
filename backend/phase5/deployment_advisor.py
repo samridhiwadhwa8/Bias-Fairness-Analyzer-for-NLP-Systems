@@ -19,8 +19,8 @@ class DeploymentAdvisor:
         Returns:
             Dictionary with deployment decision and rationale
         """
-        risk = report.get("overall_risk", {}).get("risk_percentage", 0)
-        risk_level = report.get("overall_risk", {}).get("risk_level", "Low")
+        risk = (report.get("overall_risk") or {}).get("risk_percentage", 0)
+        risk_level = (report.get("overall_risk") or {}).get("risk_level", "Low")
         
         # Extract performance metrics
         ml_results = report.get("ml_training", {})

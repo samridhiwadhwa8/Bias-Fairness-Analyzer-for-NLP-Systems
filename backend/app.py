@@ -27,7 +27,7 @@ from analyzer.report_schema import BiasAnalysisReport
 # Import Phase 5 API routes
 from api.phase5_routes import router as phase5_router
 
-# Import Phase 6 API routes  
+# Import Phase 6 API routes
 from api.phase6_routes import router as phase6_router
 
 # Initialize FastAPI app
@@ -48,6 +48,8 @@ app.add_middleware(
 
 # Include Phase 5 routes
 app.include_router(phase5_router)
+
+# Include Phase 6 routes
 app.include_router(phase6_router)
 
 # Initialize analyzer components
@@ -179,16 +181,11 @@ async def analyze_dataset(file: UploadFile = File(...)):
                 sentiment_score=bias_results.get('sentiment_score', 0),
                 class_imbalance_ratio=class_imbalance.get('imbalance_ratio', 0),
                 dataset_type=dataset_type,
-                has_demographic_columns=len(demographic_cols) > 0
+                has_demographic_columns=False
             )
-        else:
-            # Ensure demographic_score is a float
-            demo_score_raw = bias_results.get('demographic_score', 0)
-            try:
-                demo_score = float(str(demo_score_raw))
-            except (ValueError, TypeError):
-                demo_score = 0.0
-                print(f"Warning: Could not convert demographic_score '{demo_score_raw}' to float, using 0.0")
+        else:  # Tabular
+            # Extract actual demographic score from bias analysis
+            demo_score = bias_results.get('demographic_score', 0.0)
             
             risk_assessment = risk_engine.calculate_risk(
                 demographic_score=demo_score,

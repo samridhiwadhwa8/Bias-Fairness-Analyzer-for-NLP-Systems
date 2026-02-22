@@ -21,7 +21,7 @@ class MitigationEngine:
         """
         dataset_type = report.get("dataset_overview", {}).get("dataset_type", "tabular")
         bias = report.get("bias_analysis", {})
-        overall_risk = report.get("overall_risk", {})
+        overall_risk = report.get("overall_risk") or {}
         
         recommendations = []
         priority_actions = []
@@ -93,7 +93,7 @@ class MitigationEngine:
             actions.append("Schedule enhanced monitoring")
         
         # Add demographic-specific actions if detected
-        if bias.get("demographic_bias", {}).get("detected", False):
+        if overall_risk.get("bias_analysis", {}).get("demographic_bias", {}).get("detected", False):
             actions.append("Review protected attribute handling in data pipeline")
         
         return actions

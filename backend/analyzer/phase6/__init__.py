@@ -1,18 +1,4 @@
 """
-Phase 6 Module Initialization
-Clean architecture with structural profiling.
+Phase 6: Dataset Intelligence & Ecosystem Analysis
+Modular dataset profiling and benchmarking system.
 """
-
-from .profiler import DatasetProfiler
-from .benchmark_engine import BenchmarkEngine
-from .recommendation_engine import RecommendationEngine
-from .kaggle_suggester import KaggleSuggester
-from .phase6_engine import Phase6Engine
-
-__all__ = [
-    'DatasetProfiler',
-    'BenchmarkEngine', 
-    'RecommendationEngine',
-    'KaggleSuggester',
-    'Phase6Engine'
-]

@@ -49,7 +49,11 @@ async def phase5_analysis(report: Dict[str, Any]) -> Dict[str, Any]:
         result = engine.execute(report)
         
         logger.info("Phase 5 analysis completed successfully")
-        return result
+        return {
+            "success": True,
+            "phase": 5,
+            "results": result
+        }
         
     except Exception as e:
         logger.error(f"Error in Phase 5 analysis: {str(e)}")

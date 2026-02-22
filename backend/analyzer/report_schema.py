@@ -201,7 +201,7 @@ class BiasAnalysisReport:
                 
                 bias_analysis = {
                     'demographic_bias': {
-                        'detected': len(demo_cols) > 0,
+                        'detected': demo_score > 0.1,  # Only flag as detected if score > threshold
                         'score': round(demo_score, 3),
                         'columns': columns
                     },
@@ -331,11 +331,11 @@ class BiasAnalysisReport:
             "Consider re-sampling techniques for class imbalance"
         ]
     }
-    
-    @staticmethod
-    def get_example_report() -> Dict[str, Any]:
-        """Get example report for frontend development."""
-        return {
+
+
+def get_example_report() -> Dict[str, Any]:
+    """Get example report for frontend development."""
+    return {
         'dataset_overview': {
             'total_rows': 1000,
             'total_columns': 15,
@@ -343,8 +343,7 @@ class BiasAnalysisReport:
             'dataset_type': 'tabular',
             'target_column': 'income',
             'text_column': None,
-            'target_unique_count': 7,
-            'column_names': ['age', 'workclass', 'fnlwgt', 'education', 'educational-num', 'marital-status', 'occupation', 'relationship', 'race', 'gender', 'capital-gain', 'capital-loss', 'hours-per-week', 'native-country', 'income'],
+            'available_columns': ['age', 'workclass', 'fnlwgt', 'education', 'educational-num', 'marital-status', 'occupation', 'relationship', 'race', 'gender', 'capital-gain', 'capital-loss', 'hours-per-week', 'native-country', 'income'],
             'target_priority': 'high',
             'detection_info': {'detection_method': 'high_priority_match'}
         },

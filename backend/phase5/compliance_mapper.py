@@ -20,7 +20,7 @@ class ComplianceMapper:
             Dictionary with compliance assessment and requirements
         """
         bias = report.get("bias_analysis", {})
-        overall_risk = report.get("overall_risk", {})
+        overall_risk = report.get("overall_risk") or {}
         dataset_type = report.get("dataset_overview", {}).get("dataset_type", "tabular")
         
         # Extract key compliance factors
