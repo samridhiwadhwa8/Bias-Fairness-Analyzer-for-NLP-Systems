@@ -1,0 +1,108 @@
+{
+  "version": "1.0.0",
+  "description": "Bias Analyzer Dataset Collection - Enhanced with Metadata",
+  "last_updated": "2025-02-18",
+  "datasets": {
+    "toxic_comments.csv": {
+      "domain": "nlp/text_classification",
+      "target_column": "toxic",
+      "text_column": "comment_text",
+      "data_type": "text",
+      "known_sensitive_attributes": ["gender", "race", "religion"],
+      "source_link": "https://www.kaggle.com/datasets/julian3833/jigsaw-toxic-comment-classification-challenge",
+      "description": "Toxic comment classification for hate speech detection",
+      "bias_risk_level": "medium",
+      "sample_size": 159571,
+      "use_cases": ["toxicity_detection", "content_moderation", "hate_speech_analysis"]
+    },
+    "job_posts.csv": {
+      "domain": "employment/nlp",
+      "target_column": null,
+      "text_column": "job_description",
+      "data_type": "text",
+      "known_sensitive_attributes": ["gender", "age", "experience_level"],
+      "source_link": "https://www.kaggle.com/datasets/promptcloud/jobs-and-salaries-in-data-science-field",
+      "description": "Job postings for gender-coded language analysis",
+      "bias_risk_level": "high",
+      "sample_size": 1000,
+      "use_cases": ["gender_bias_detection", "employment_fairness", "language_bias"]
+    },
+    "adult_income.csv": {
+      "domain": "demographic/classification",
+      "target_column": "income",
+      "text_column": "workclass",
+      "data_type": "mixed",
+      "known_sensitive_attributes": ["gender", "race", "education", "age"],
+      "source_link": "https://www.kaggle.com/datasets/uciml/adult-census-income",
+      "description": "Adult income prediction for socioeconomic bias analysis",
+      "bias_risk_level": "high",
+      "sample_size": 48842,
+      "use_cases": ["gender_pay_gap", "socioeconomic_bias", "educational_fairness"]
+    },
+    "student_performance.csv": {
+      "domain": "education/regression",
+      "target_column": "math_score",
+      "text_column": "gender",
+      "data_type": "mixed",
+      "known_sensitive_attributes": ["gender", "race", "parental_education"],
+      "source_link": "https://www.kaggle.com/datasets/spscientist/students-performance-in-exams",
+      "description": "Student performance for educational bias analysis",
+      "bias_risk_level": "medium",
+      "sample_size": 1000,
+      "use_cases": ["educational_bias", "gender_performance_gap", "socioeconomic_factors"]
+    },
+    "diabetes.csv": {
+      "domain": "healthcare/medical",
+      "target_column": "outcome",
+      "text_column": null,
+      "data_type": "numeric",
+      "known_sensitive_attributes": ["age", "bmi", "blood_pressure"],
+      "source_link": "https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database",
+      "description": "Diabetes prediction dataset for healthcare bias analysis",
+      "bias_risk_level": "high",
+      "sample_size": 768,
+      "use_cases": ["healthcare_bias", "medical_prediction", "diagnostic_fairness"],
+      "note": "Differences may be due to biological or epidemiological factors, not algorithmic unfairness."
+    },
+    "weather.csv": {
+      "domain": "environmental/technical",
+      "target_column": null,
+      "text_column": null,
+      "data_type": "numeric",
+      "known_sensitive_attributes": [],
+      "source_link": "generated_synthetic_data",
+      "description": "Weather data as purely technical control dataset",
+      "bias_risk_level": "low",
+      "sample_size": 30,
+      "use_cases": ["control_validation", "baseline_testing", "bias_false_positive_control"]
+    }
+  },
+  "bias_dimensions": {
+    "gender": {
+      "description": "Bias based on gender identity and expression",
+      "detection_methods": ["accuracy_gap", "prediction_rate_gap", "demographic_parity"],
+      "mitigation_strategies": ["reweighing", "disparate_impact_remover", "adversarial_debiasing"]
+    },
+    "race": {
+      "description": "Bias based on racial and ethnic groups",
+      "detection_methods": ["equal_opportunity", "calibration", "individual_fairness"],
+      "mitigation_strategies": ["fairness_constraints", "preprocessing", "postprocessing"]
+    },
+    "age": {
+      "description": "Bias based on age groups",
+      "detection_methods": ["age_group_analysis", "generation_gap", "experience_bias"],
+      "mitigation_strategies": ["age_balanced_sampling", "fair_representation"]
+    },
+    "socioeconomic": {
+      "description": "Bias based on income, education, and social class",
+      "detection_methods": ["economic_mobility", "educational_access", "opportunity_gap"],
+      "mitigation_strategies": ["economic_reweighing", "class_balancing", "access_fairness"]
+    }
+  },
+  "auto_detection_rules": {
+    "gender_columns": ["gender", "sex", "male", "female", "man", "woman"],
+    "age_columns": ["age", "age_group", "age_of_user", "years", "experience"],
+    "socioeconomic_columns": ["income", "salary", "education", "workclass", "class", "occupation"],
+    "race_columns": ["race", "ethnicity", "nationality", "country"]
+  }
+}
