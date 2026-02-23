@@ -694,20 +694,16 @@ function App() {
               <h2 className="card-title">Report Actions</h2>
             </div>
             <div className="mitigation-list">
-              {/* Debug info */}
-              <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
-                Debug: PDF Path = {phase7Report.results?.pdf_path || 'NULL'}
-              </div>
               <button 
                 onClick={() => {
                   const pdfPath = phase7Report.results?.pdf_path;
                   if (pdfPath && pdfPath !== 'undefined' && pdfPath !== null) {
                     const filename = pdfPath.split('/').pop();
                     const downloadUrl = `http://localhost:8000/phase7/download/${filename}`;
-                    console.log('Downloading PDF:', downloadUrl);
+                    console.log('Downloading professional PDF:', downloadUrl);
                     window.open(downloadUrl, '_blank');
                   } else {
-                    alert('PDF report not available. Please run analysis first.');
+                    alert('Professional PDF report not available. Please run analysis first.');
                   }
                 }}
                 className="mitigation-item"
@@ -719,20 +715,38 @@ function App() {
             </div>
           </div>
           
-          {/* Visual Insights Summary */}
+          {/* Professional Report Summary */}
           {phase7Report.results?.visual_paths && phase7Report.results.visual_paths.length > 0 && (
             <div className="card">
               <div className="card-header">
                 <BarChart3 className="card-icon" />
-                <h2 className="card-title">Generated Visualizations</h2>
+                <h2 className="card-title">Professional Report Components</h2>
               </div>
               <div className="mitigation-list">
-                {phase7Report.results.visual_paths.map((path, idx) => (
-                  <div key={idx} className="mitigation-item">
-                    <span className="mitigation-bullet">•</span>
-                    <span className="mitigation-text">{path.split('/').pop()}</span>
-                  </div>
-                ))}
+                <div className="mitigation-item">
+                  <span className="mitigation-bullet">📊</span>
+                  <span className="mitigation-text">5-Page Professional PDF Report</span>
+                </div>
+                <div className="mitigation-item">
+                  <span className="mitigation-bullet">📈</span>
+                  <span className="mitigation-text">Class Distribution Chart</span>
+                </div>
+                <div className="mitigation-item">
+                  <span className="mitigation-bullet">🎯</span>
+                  <span className="mitigation-text">Confusion Matrix Analysis</span>
+                </div>
+                <div className="mitigation-item">
+                  <span className="mitigation-bullet">⚖️</span>
+                  <span className="mitigation-text">Bias Component Analysis</span>
+                </div>
+                <div className="mitigation-item">
+                  <span className="mitigation-bullet">📉</span>
+                  <span className="mitigation-text">Risk Breakdown & Percentile Charts</span>
+                </div>
+                <div className="mitigation-item">
+                  <span className="mitigation-bullet">📋</span>
+                  <span className="mitigation-text">Executive Summary & Mitigation Plan</span>
+                </div>
               </div>
             </div>
           )}

@@ -43,20 +43,19 @@ class Phase7Engine:
             Dictionary with visual paths and PDF path
         """
         try:
-            # Generate all visualizations
-            visual_paths = []
+            # Generate all visualizations as matplotlib figures
+            figures = {}
             if self.visual_engine:
-                with contextlib.redirect_stdout(io.StringIO()):
-                    visual_paths = self.visual_engine.generate_all_visuals(final_report)
+                figures = self.visual_engine.generate_all_visuals(final_report)
             
-            # Generate PDF report
+            # Generate PDF report with embedded figures
             pdf_path = None
             if self.report_builder:
-                with contextlib.redirect_stdout(io.StringIO()):
-                    pdf_path = self.report_builder.generate_pdf_report(final_report, visual_paths)
+                pdf_path = self.report_builder.generate_pdf_report(final_report, figures)
+                print(f"📄 PDF Generation Result: {pdf_path}")
             
             return {
-                "visual_paths": visual_paths,
+                "visual_paths": list(figures.keys()),  # Return figure names for reference
                 "pdf_path": pdf_path,
                 "timestamp": datetime.now().isoformat(),
                 "status": "success"
