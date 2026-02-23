@@ -4,8 +4,12 @@ Phase 7: Dataset Governance System
 Main engine for orchestrating Phase 7 reporting and visualization.
 """
 
-from typing import Dict, Any, List
 import os
+import sys
+from typing import Dict, Any, List
+from datetime import datetime
+import io
+import contextlib
 import shutil
 from datetime import datetime
 
@@ -42,12 +46,14 @@ class Phase7Engine:
             # Generate all visualizations
             visual_paths = []
             if self.visual_engine:
-                visual_paths = self.visual_engine.generate_all_visuals(final_report)
+                with contextlib.redirect_stdout(io.StringIO()):
+                    visual_paths = self.visual_engine.generate_all_visuals(final_report)
             
             # Generate PDF report
             pdf_path = None
             if self.report_builder:
-                pdf_path = self.report_builder.generate_pdf_report(final_report, visual_paths)
+                with contextlib.redirect_stdout(io.StringIO()):
+                    pdf_path = self.report_builder.generate_pdf_report(final_report, visual_paths)
             
             return {
                 "visual_paths": visual_paths,

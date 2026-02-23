@@ -3,10 +3,9 @@ Dataset Intelligence & Bias Governance Report
 
 EXECUTIVE SUMMARY
 --------------------
-Overall Assessment: NORMAL - Proceed with standard monitoring
-Risk Level: Risk Level: Low (16%)
 
 DATASET OVERVIEW
 --------------------
 Total Rows: 768
 Dataset Type: tabular
+Target Column: Outcome

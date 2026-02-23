@@ -15,7 +15,9 @@ class VisualEngine:
     """Generate professional visualizations for bias analysis reports."""
     
     def __init__(self):
-        self.output_dir = "outputs/visuals"
+        import tempfile
+        # Use system temp directory instead of project directory
+        self.output_dir = tempfile.gettempdir() + "/bias_visuals"
         os.makedirs(self.output_dir, exist_ok=True)
     
     def generate_all_visuals(self, report: Dict[str, Any]) -> List[str]:

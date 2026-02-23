@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { Upload, Shield, CheckCircle, XCircle, Database, Brain, Users, MessageSquare, TrendingUp, Target, BarChart3 } from 'lucide-react'
+import { Upload, Shield, CheckCircle, XCircle, Database, Brain, Users, MessageSquare, TrendingUp, Target, BarChart3, Download } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import axios from 'axios'
 
@@ -694,21 +694,27 @@ function App() {
               <h2 className="card-title">Report Actions</h2>
             </div>
             <div className="mitigation-list">
+              {/* Debug info */}
+              <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
+                Debug: PDF Path = {phase7Report.results?.pdf_path || 'NULL'}
+              </div>
               <button 
-                onClick={() => window.open(`http://localhost:8000/phase7/download/${phase7Report.results?.pdf_path?.split('/').pop()}`, '_blank')}
+                onClick={() => {
+                  const pdfPath = phase7Report.results?.pdf_path;
+                  if (pdfPath && pdfPath !== 'undefined' && pdfPath !== null) {
+                    const filename = pdfPath.split('/').pop();
+                    const downloadUrl = `http://localhost:8000/phase7/download/${filename}`;
+                    console.log('Downloading PDF:', downloadUrl);
+                    window.open(downloadUrl, '_blank');
+                  } else {
+                    alert('PDF report not available. Please run analysis first.');
+                  }
+                }}
                 className="mitigation-item"
                 style={{ cursor: 'pointer', padding: '10px', margin: '5px', border: '1px solid #ddd', borderRadius: '5px', background: '#f8f9fa' }}
               >
                 <span className="mitigation-bullet">📄</span>
                 <span className="mitigation-text">Download Full Report (PDF)</span>
-              </button>
-              <button 
-                onClick={() => window.open(`http://localhost:8000/phase7/download-visuals`, '_blank')}
-                className="mitigation-item"
-                style={{ cursor: 'pointer', padding: '10px', margin: '5px', border: '1px solid #ddd', borderRadius: '5px', background: '#f8f9fa' }}
-              >
-                <span className="mitigation-bullet">📊</span>
-                <span className="mitigation-text">Download Visual Insights (ZIP)</span>
               </button>
             </div>
           </div>

@@ -64,7 +64,7 @@ async def generate_governance_report(final_report: Dict[str, Any]) -> Dict[str, 
 @router.get("/download/{filename}")
 async def download_file(filename: str):
     """
-    Download generated files (PDF or images).
+    Download generated PDF report.
     
     Args:
         filename: Name of file to download
@@ -73,9 +73,10 @@ async def download_file(filename: str):
         File download response
     """
     try:
-        # Security check - only allow specific file types and paths
-        allowed_extensions = ['.pdf', '.png']
-        allowed_dirs = ['outputs/reports', 'outputs/visuals']
+        # Security check - only allow PDF files from temp directory
+        allowed_extensions = ['.pdf']
+        import tempfile
+        allowed_dirs = [tempfile.gettempdir() + "/bias_reports"]
         
         file_path = None
         for directory in allowed_dirs:
@@ -98,46 +99,9 @@ async def download_file(filename: str):
         return FileResponse(
             path=file_path,
             filename=filename,
-            media_type='application/pdf' if filename.endswith('.pdf') else 'image/png'
+            media_type='application/pdf'
         )
         
     except Exception as e:
         logger.error(f"Error downloading file {filename}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
-
-
-@router.get("/download-visuals")
-async def download_visuals_zip():
-    """
-    Download all visualizations as a ZIP file.
-    
-    Returns:
-        ZIP file with all PNG visualizations
-    """
-    try:
-        # Create ZIP file
-        zip_path = "outputs/visuals.zip"
-        visual_dir = "outputs/visuals"
-        
-        if not os.path.exists(visual_dir):
-            raise HTTPException(status_code=404, detail="No visualizations available")
-        
-        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for root, dirs, files in os.walk(visual_dir):
-                for file in files:
-                    if file.endswith('.png'):
-                        file_path = os.path.join(root, file)
-                        arcname = os.path.relpath(file_path, visual_dir)
-                        zipf.write(file_path, arcname)
-        
-        # Return ZIP file
-        from fastapi.responses import FileResponse
-        return FileResponse(
-            path=zip_path,
-            filename="visual_insights.zip",
-            media_type='application/zip'
-        )
-        
-    except Exception as e:
-        logger.error(f"Error creating ZIP file: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"ZIP creation failed: {str(e)}")
