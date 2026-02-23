@@ -3,6 +3,17 @@ import numpy as np
 import seaborn as sns
 from typing import Dict, Any
 
+def safe_get(report, *keys, default=None):
+    """Safely get nested dictionary values."""
+    data = report
+    for key in keys:
+        if not isinstance(data, dict):
+            return default
+        data = data.get(key)
+        if data is None:
+            return default
+    return data
+
 def generate_dashboard(report: Dict[str, Any]):
     """
     Generate a 2x2 dashboard with 4 professional charts.
@@ -17,15 +28,21 @@ def generate_dashboard(report: Dict[str, Any]):
     fig, axes = plt.subplots(2, 2, figsize=(11, 8))
     fig.patch.set_facecolor('white')
     
-    # Extract data
-    ml_training = report.get("ml_training", {})
-    overall_risk = report.get("overall_risk", {})
-    bias_analysis = report.get("bias_analysis", {})
-    phase6_results = report.get("phase6_results", {})
+    # Extract data using safe_get
+    class_dist = safe_get(report, "ml_training", "class_imbalance_details", "class_distribution", default={})
+    bias_breakdown = safe_get(report, "overall_risk", "breakdown", default={})
+    overall_risk = safe_get(report, "overall_risk", default={})
+    risk_percentile = safe_get(report, "phase6", "risk_percentile", default=None)
+    market_position = safe_get(report, "phase6", "market_position", default="N/A")
+    fingerprint = safe_get(report, "phase6", "profile", "fingerprint", default="Unavailable")
+    domain = safe_get(report, "phase6", "profile", "domain", default="Unavailable")
+    task = safe_get(report, "phase6", "profile", "task", default="Unavailable")
+    size = safe_get(report, "phase6", "profile", "size", default="Unavailable")
+    balance = safe_get(report, "phase6", "profile", "balance", default="Unavailable")
+    dataset_overview = safe_get(report, "dataset_overview", default={})
     
     # === TOP-LEFT: Class Distribution ===
     ax = axes[0, 0]
-    class_dist = ml_training.get("class_distribution", {})
     if class_dist:
         classes = list(class_dist.keys())
         counts = list(class_dist.values())
@@ -43,15 +60,18 @@ def generate_dashboard(report: Dict[str, Any]):
             ax.text(bar.get_x() + bar.get_width()/2., height + max(counts)*0.01,
                     f'{count:,}', ha='center', va='bottom', fontsize=9, fontweight='bold')
     else:
-        ax.text(0.5, 0.5, 'No Class Data', ha='center', va='center', transform=ax.transAxes)
+        ax.text(0.5, 0.5, 'Data Not Available', ha='center', va='center', transform=ax.transAxes)
         ax.set_title("Class Distribution", fontsize=12, fontweight='bold')
     
     # === TOP-RIGHT: Bias Components ===
     ax = axes[0, 1]
-    risk_breakdown = overall_risk.get("breakdown", {})
-    if risk_breakdown:
-        components = list(risk_breakdown.keys())
-        values = list(risk_breakdown.values())
+    
+    # Debug output
+    print(f"🔍 BIAS DEBUG: bias_breakdown = {bias_breakdown}")
+    
+    if bias_breakdown:
+        components = list(bias_breakdown.keys())
+        values = list(bias_breakdown.values())
         colors = ['#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][:len(components)]
         
         # Create horizontal bar chart
@@ -66,8 +86,33 @@ def generate_dashboard(report: Dict[str, Any]):
         # Add value labels
         for i, (bar, val) in enumerate(zip(bars, values)):
             ax.text(val + max(values)*0.01, i, f'{val}', ha='left', va='center', fontsize=9, fontweight='bold')
+        
+        # Add bias analysis summary
+        bias_analysis = report.get("bias_analysis", {})
+        demographic_bias = bias_analysis.get("demographic_bias", {})
+        linguistic_bias = bias_analysis.get("linguistic_bias", {})
+        
+        # Add bias detection status
+        demo_detected = demographic_bias.get("detected", False)
+        demo_score = demographic_bias.get("score", 0)
+        demo_columns = demographic_bias.get("columns", [])
+        
+        ling_detected = linguistic_bias.get("detected", False)
+        ling_score = linguistic_bias.get("score", 0)
+        
+        bias_summary = f"Demographic Bias: {'Detected' if demo_detected else 'Not Detected'} (Score: {demo_score:.2f})"
+        if demo_columns:
+            bias_summary += f" - Columns: {', '.join(demo_columns)}"
+        
+        bias_summary += f"\nLinguistic Bias: {'Detected' if ling_detected else 'Not Detected'} (Score: {ling_score:.2f})"
+        
+        ax.text(0.02, 0.98, bias_summary, transform=ax.transAxes, fontsize=8, 
+                verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
+        
+        print(f"🔍 BIAS CHART: Created with {len(components)} components")
     else:
-        ax.text(0.5, 0.5, 'No Bias Data', ha='center', va='center', transform=ax.transAxes)
+        print("🔍 BIAS CHART: No bias_breakdown data available")
+        ax.text(0.5, 0.5, 'Bias Data Not Available', ha='center', va='center', transform=ax.transAxes)
         ax.set_title("Bias Components", fontsize=12, fontweight='bold')
     
     # === BOTTOM-LEFT: Risk Breakdown ===
@@ -101,41 +146,39 @@ def generate_dashboard(report: Dict[str, Any]):
         ax.axvspan(25, 75, alpha=0.1, color='orange', label='Medium')
         ax.axvspan(75, 100, alpha=0.1, color='red', label='High')
     else:
-        ax.text(0.5, 0.5, 'No Risk Data', ha='center', va='center', transform=ax.transAxes)
+        ax.text(0.5, 0.5, 'Data Not Available', ha='center', va='center', transform=ax.transAxes)
         ax.set_title("Risk Breakdown", fontsize=12, fontweight='bold')
     
-    # === BOTTOM-RIGHT: Percentile Position ===
+    # === BOTTOM-RIGHT: Dataset Size Analysis ===
     ax = axes[1, 1]
-    if phase6_results:
-        percentile = phase6_results.get("risk_percentile", 0)
-        market_position = phase6_results.get("market_position", "N/A")
+    if dataset_overview:
+        total_rows = dataset_overview.get("total_rows", 0)
+        available_columns = dataset_overview.get("available_columns", [])
+        num_columns = len(available_columns) if available_columns else 0
         
-        # Create percentile bar
-        bar_color = '#10b981' if percentile < 25 else '#f59e0b' if percentile < 75 else '#ef4444'
+        # Create dual bar chart for rows and columns
+        categories = ['Total Rows', 'Total Columns']
+        values = [total_rows, num_columns]
+        colors = ['#3498db', '#e74c3c']
         
-        # Background bar
-        ax.barh(0, 100, height=0.3, color='lightgray', alpha=0.3)
+        bars = ax.bar(categories, values, color=colors, alpha=0.8, edgecolor='white', linewidth=2)
+        ax.set_title("Dataset Size Analysis", fontsize=12, fontweight='bold', pad=10)
+        ax.set_ylabel("Count", fontsize=10)
+        ax.grid(True, alpha=0.3, axis='y')
         
-        # Percentile position
-        ax.barh(0, percentile, height=0.3, color=bar_color, alpha=0.8)
+        # Add value labels on bars
+        for bar, value in zip(bars, values):
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height + max(values)*0.01,
+                    f'{value:,}', ha='center', va='bottom', fontsize=9, fontweight='bold')
         
-        ax.set_xlim(0, 100)
-        ax.set_ylim(-0.5, 0.5)
-        ax.set_xlabel("Risk Percentile", fontsize=10)
-        ax.set_yticks([])
-        ax.set_title("Market Position", fontsize=12, fontweight='bold', pad=10)
-        ax.grid(True, alpha=0.3, axis='x')
-        
-        # Add percentile text
-        ax.text(percentile, 0, f'{percentile}th', ha='center', va='center', 
-                fontsize=10, fontweight='bold', color='white')
-        
-        # Add market position text
-        ax.text(50, -0.3, market_position, ha='center', va='center', 
-                fontsize=9, style='italic', transform=ax.transData)
+        # Add dataset type info
+        dataset_type = dataset_overview.get("dataset_type", "Unknown")
+        ax.text(0.5, -0.3, f'Dataset Type: {dataset_type.title()}', 
+                ha='center', va='center', fontsize=9, style='italic', transform=ax.transData)
     else:
-        ax.text(0.5, 0.5, 'No Percentile Data', ha='center', va='center', transform=ax.transAxes)
-        ax.set_title("Market Position", fontsize=12, fontweight='bold')
+        ax.text(0.5, 0.5, 'Data Not Available', ha='center', va='center', transform=ax.transAxes)
+        ax.set_title("Dataset Size Analysis", fontsize=12, fontweight='bold')
     
     # === GLOBAL TITLE AND STYLING ===
     fig.suptitle(

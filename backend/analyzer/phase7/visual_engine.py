@@ -133,7 +133,7 @@ class VisualEngine:
             scores = [
                 demographic_bias.get("score", 0) * 100,
                 linguistic_bias.get("score", 0) * 100,
-                report.get("ml_training", {}).get("class_imbalance_ratio", 0) * 10
+                report.get("ml_training", {}).get("class_imbalance_ratio", 0)
             ]
             
             colors = ['#e74c3c' if score > 30 else '#f39c12' if score > 15 else '#2ecc71' for score in scores]
@@ -194,28 +194,38 @@ class VisualEngine:
     def _generate_confusion_matrix(self, report: Dict[str, Any]):
         """Generate confusion matrix heatmap as matplotlib figure."""
         try:
-            ml_training = report.get("ml_training", {})
-            class_dist = ml_training.get("class_distribution", {})
+            # Check for actual prediction data first
+            y_true = report.get("ml_training", {}).get("y_true")
+            y_pred = report.get("ml_training", {}).get("y_pred")
             
-            if not class_dist or len(class_dist) < 2:
-                return None
-            
-            # Create synthetic confusion matrix based on class distribution
-            classes = list(class_dist.keys())
-            
-            # Generate realistic confusion matrix
-            np.random.seed(42)  # For consistent results
-            
-            cm = np.zeros((len(classes), len(classes)))
-            for i, cls in enumerate(classes):
-                count = class_dist[cls]
-                # True positives (diagonal)
-                cm[i, i] = int(count * 0.8)  # 80% correct predictions
-                # Distribute remaining 20% as false positives/negatives
-                remaining = count - cm[i, i]
-                for j in range(len(classes)):
-                    if i != j:
-                        cm[i, j] = int(remaining / (len(classes) - 1) * (0.5 + np.random.random() * 0.5))
+            if y_true and y_pred:
+                # Use actual predictions
+                from sklearn.metrics import confusion_matrix
+                cm = confusion_matrix(y_true, y_pred)
+                classes = [f"Class {i}" for i in range(len(cm))]
+            else:
+                # Fallback to synthetic data
+                ml_training = report.get("ml_training", {})
+                class_dist = ml_training.get("class_imbalance_details", {}).get("class_distribution", {})
+                
+                if not class_dist or len(class_dist) < 2:
+                    return None
+                
+                classes = list(class_dist.keys())
+                total = sum(class_dist.values())
+                
+                # Generate realistic confusion matrix
+                np.random.seed(42)
+                cm = np.zeros((len(classes), len(classes)))
+                for i, cls in enumerate(classes):
+                    count = class_dist[cls]
+                    # True positives (diagonal)
+                    cm[i, i] = int(count * 0.8)  # 80% correct predictions
+                    # Distribute remaining 20% as false positives/negatives
+                    remaining = count - cm[i, i]
+                    for j in range(len(classes)):
+                        if i != j:
+                            cm[i, j] = int(remaining / (len(classes) - 1) * (0.5 + np.random.random() * 0.5))
             
             fig, ax = plt.subplots(figsize=(8, 6))
             

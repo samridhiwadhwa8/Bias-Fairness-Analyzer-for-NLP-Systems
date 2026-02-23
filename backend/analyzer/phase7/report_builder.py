@@ -177,7 +177,7 @@ class ReportBuilder:
             elements.append(Spacer(1, 0.4 * inch))
             elements.append(Paragraph("Analytics Dashboard", styles['Heading1']))
             elements.append(Spacer(1, 0.2 * inch))
-            elements.append(Paragraph("This comprehensive dashboard provides a visual overview of your dataset's key metrics, bias analysis, risk assessment, and market positioning. Each panel offers critical insights into different aspects of your data and model performance.", styles['Normal']))
+            elements.append(Paragraph("This comprehensive dashboard provides a visual overview of your dataset's key metrics, bias analysis, risk assessment, and dataset characteristics. Each panel offers critical insights into different aspects of your data and model performance.", styles['Normal']))
             elements.append(Spacer(1, 0.1 * inch))
             
             # Generate and embed the dashboard
@@ -347,18 +347,31 @@ class ReportBuilder:
             elements.append(Paragraph("Risk Intelligence", styles['Heading1']))
             elements.append(Spacer(1, 0.2 * inch))
             
-            phase6_results = report.get("phase6_results", {})
-            profile = phase6_results.get("profile", {}) if phase6_results else {}
-            percentile = phase6_results.get("risk_percentile", 0) if phase6_results else 0
-            position = phase6_results.get("market_position", 'N/A') if phase6_results else 'N/A'
+            # Extract Phase 6 data using safe access
+            phase6_results = report.get("phase6", {})
+            profile = phase6_results.get("profile", {})
+            percentile = phase6_results.get("risk_percentile", None)
+            position = phase6_results.get("market_position", 'N/A')
+            
+            # Extract profile data safely
+            fingerprint = profile.get("fingerprint", "Unavailable")
+            domain = profile.get("domain", "Unavailable")
+            task = profile.get("task", "Unavailable")
+            size = profile.get("size", "Unavailable")
+            balance = profile.get("balance", "Unavailable")
             
             # Risk intelligence as text instead of table
             elements.append(Paragraph("Risk Intelligence Assessment", styles['Heading2']))
             elements.append(Spacer(1, 0.1 * inch))
             
-            risk_text = f"""The dataset fingerprint '{profile.get('fingerprint', 'N/A')}' indicates it belongs to the {profile.get('domain', 'N/A')} domain with a {profile.get('task', 'N/A')} task type. 
-            Classified as {profile.get('size', 'N/A')} size with {profile.get('balance', 'N/A')} balance characteristics, the dataset is positioned at the {percentile}th risk percentile within the ecosystem. 
-            This placement indicates the dataset is '{position}' compared to similar datasets, suggesting {'minimal risk concerns' if percentile < 25 else 'moderate risk considerations' if percentile < 75 else 'significant risk factors requiring attention'}."""
+            if percentile is not None:
+                risk_text = f"""The dataset fingerprint '{fingerprint}' indicates it belongs to the {domain} domain with a {task} task type. 
+                Classified as {size} size with {balance} balance characteristics, the dataset is positioned at the {percentile}th risk percentile within the ecosystem. 
+                This placement indicates the dataset is '{position}' compared to similar datasets, suggesting {'minimal risk concerns' if percentile < 25 else 'moderate risk considerations' if percentile < 75 else 'significant risk factors requiring attention'}."""
+            else:
+                risk_text = f"""The dataset fingerprint '{fingerprint}' indicates it belongs to the {domain} domain with a {task} task type. 
+                Classified as {size} size with {balance} balance characteristics, the dataset's risk positioning within the ecosystem is currently being analyzed. 
+                Market analysis indicates the dataset is '{position}' compared to similar datasets."""
             
             elements.append(Paragraph(risk_text, styles['Normal']))
             elements.append(Spacer(1, 0.3 * inch))
@@ -464,15 +477,24 @@ class ReportBuilder:
             elements.append(Paragraph("Mitigation & Deployment", styles['Heading1']))
             elements.append(Spacer(1, 0.2 * inch))
             
-            if phase5_results:
-                mitigation = phase5_results.get("mitigation", {})
-                deployment = phase5_results.get("deployment", {})
-                
+            # Extract mitigation data safely
+            mitigation = report.get("mitigation", {})
+            deployment = report.get("deployment", {})
+            confidence_score = deployment.get("confidence_score", 0)
+            
+            # Get mitigation actions and strategies
+            actions = mitigation.get("recommended_actions", [])
+            strategies = mitigation.get("technical_strategies", [])
+            timeline = mitigation.get("estimated_timeline", "Not specified")
+            complexity = mitigation.get("implementation_complexity", "Not specified")
+            
+            # Get deployment info
+            deployment_decision = deployment.get("deployment_decision", "Not specified")
+            
+            if actions or strategies:
                 # Mitigation details as text instead of table
-                actions = mitigation.get("recommended_actions", [])
-                
                 mitigation_text = f"""The comprehensive mitigation strategy identifies {len(actions)} key actions to address identified bias risks. 
-                With an estimated implementation timeline of {mitigation.get('estimated_timeline', 'N/A')} and {mitigation.get('implementation_complexity', 'N/A')} complexity, 
+                With an estimated implementation timeline of {timeline} and {complexity} complexity, 
                 these measures are designed to enhance fairness and reliability. The priority level is assessed as {'High' if overall_risk.get('risk_level') == 'High' else 'Medium' if overall_risk.get('risk_level') == 'Moderate' else 'Low'} based on the current risk assessment."""
                 
                 elements.append(Paragraph(mitigation_text, styles['Normal']))
@@ -482,54 +504,51 @@ class ReportBuilder:
                 elements.append(Paragraph("Recommended Mitigation Actions", styles['Heading2']))
                 elements.append(Spacer(1, 0.1 * inch))
                 
-                for i, action in enumerate(actions[:5], 1):
-                    action_text = f"{i}. {action}"
-                    elements.append(Paragraph(action_text, styles['Normal']))
-                    elements.append(Spacer(1, 0.05 * inch))
+                if actions:
+                    elements.append(Paragraph("Recommended Actions:", styles['Normal']))
+                    for action in actions:
+                        elements.append(Paragraph(f"• {action}", styles['Normal']))
+                    elements.append(Spacer(1, 0.1 * inch))
                 
+                if strategies:
+                    elements.append(Paragraph("Technical Strategies:", styles['Normal']))
+                    for strat in strategies:
+                        elements.append(Paragraph(f"• {strat}", styles['Normal']))
+                    elements.append(Spacer(1, 0.1 * inch))
+                
+                # Implementation details
+                impl_text = f"""Implementation Timeline: {timeline}
+                Complexity Level: {complexity}
+                These mitigation strategies are designed to address identified bias issues while maintaining model performance and operational efficiency."""
+                
+                elements.append(Paragraph(impl_text, styles['Normal']))
                 elements.append(Spacer(1, 0.2 * inch))
                 
-                # Final Deployment Decision
-                elements.append(Paragraph("Final Deployment Decision", styles['Heading2']))
-                elements.append(Spacer(1, 0.15 * inch))
+                # Deployment Decision
+                elements.append(Paragraph("Deployment Decision", styles['Heading2']))
+                elements.append(Spacer(1, 0.1 * inch))
                 
-                decision = deployment.get("deployment_decision", "Pending")
-                confidence = deployment.get("confidence_score", 0)
+                decision_text = f"""Based on the comprehensive analysis conducted, the recommended deployment decision is: {deployment_decision}
+                Confidence Score: {int(confidence_score * 100)}%
                 
-                # Bold decision statement
-                decision_color = "#00AA00" if "Deploy" in decision else "#AA0000"
-                decision_style = ParagraphStyle('FinalDecision', parent=styles['Heading2'], 
-                                                textColor=colors.HexColor(decision_color),
-                                                fontSize=16,
-                                                spaceAfter=20)
-                elements.append(Paragraph(decision.upper(), decision_style))
-                
-                # Decision explanation
-                if "Deploy" in decision:
-                    decision_text = f"The dataset and model are approved for deployment with {int(confidence * 100)}% confidence. Standard monitoring protocols should be implemented to ensure ongoing performance and fairness. The model demonstrates acceptable bias levels and reliable predictive accuracy suitable for production use."
-                elif "Proceed" in decision:
-                    decision_text = f"The dataset is approved for deployment with enhanced monitoring, with {int(confidence * 100)}% confidence. Additional oversight measures are recommended to address identified bias factors while maintaining operational effectiveness."
-                else:
-                    decision_text = f"Deployment is not recommended at this time due to identified bias risks. Further mitigation efforts and model refinement are required before production deployment can be considered."
+                This decision considers the model's performance metrics, bias analysis results, risk assessment, and the effectiveness of proposed mitigation strategies."""
                 
                 elements.append(Paragraph(decision_text, styles['Normal']))
                 elements.append(Spacer(1, 0.2 * inch))
                 
-                # Comprehensive deployment guidance
-                elements.append(Paragraph("Deployment Guidance & Next Steps", styles['Heading2']))
+                # Deployment Guidance
+                elements.append(Paragraph("Deployment Guidance", styles['Heading2']))
                 elements.append(Spacer(1, 0.1 * inch))
                 
-                guidance_text = f"""Based on the comprehensive analysis, the following deployment approach is recommended:
+                guidance_text = f"""For successful deployment, the following steps are recommended:
                 
-                Monitoring Framework: Implement continuous bias monitoring with automated alerts for performance degradation or bias drift. Key metrics to track include accuracy, precision, recall, and fairness indicators across demographic groups.
+                1. **Pre-Deployment Validation**: Conduct final testing with production-like data to ensure model stability and performance.
+                2. **Monitoring Setup**: Implement real-time monitoring for bias metrics and performance indicators.
+                3. **Stakeholder Communication**: Establish clear communication channels for reporting issues and feedback.
+                4. **Rollout Strategy**: Consider gradual deployment with appropriate rollback procedures.
+                5. **Documentation**: Maintain comprehensive documentation of model performance and bias mitigation efforts.
                 
-                Data Quality Assurance: Establish regular data validation checks to ensure incoming data maintains the same distribution and quality characteristics as the training dataset. Monitor for missing values and data drift patterns.
-                
-                Model Maintenance: Schedule periodic model retraining based on performance thresholds or significant changes in data distribution. Maintain version control for model updates and rollback procedures.
-                
-                Stakeholder Communication: Establish clear communication channels for reporting bias incidents or performance issues. Document all mitigation efforts and their effectiveness for regulatory compliance and transparency.
-                
-                Continuous Improvement: Regularly review model performance against business objectives and ethical guidelines. Update mitigation strategies based on new research findings and best practices in AI fairness."""
+                Ongoing monitoring should focus on maintaining fairness while preserving model effectiveness."""
                 
                 elements.append(Paragraph(guidance_text, styles['Normal']))
                 elements.append(Spacer(1, 0.2 * inch))
@@ -538,66 +557,40 @@ class ReportBuilder:
                 elements.append(Paragraph("Risk Management Summary", styles['Heading2']))
                 elements.append(Spacer(1, 0.1 * inch))
                 
-                risk_summary = f"""The overall risk assessment indicates {overall_risk.get('risk_level', 'N/A')} risk level with {overall_risk.get('risk_percentage', 0)}% overall risk score. 
-                The primary risk factors include {'demographic bias patterns' if bias_analysis.get('demographic_bias', {}).get('detected') else 'minimal demographic bias concerns'} and 
-                {'linguistic bias considerations' if bias_analysis.get('linguistic_bias', {}).get('detected') else 'no significant linguistic bias detected'}.
-                The deployment confidence of {int(confidence * 100)}% reflects the thoroughness of the bias analysis and the effectiveness of proposed mitigation strategies."""
+                risk_summary = f"""The model presents {overall_risk.get('risk_level', 'N/A').lower()} overall risk with specific considerations for bias mitigation. 
+                Key risk factors include demographic bias patterns and potential performance variations across different subgroups.
+                
+                Mitigation efforts should focus on:
+                - Continuous monitoring of bias metrics
+                - Regular model retraining with diverse data
+                - Implementation of fairness-aware algorithms
+                - Stakeholder engagement and feedback collection
+                
+                This proactive approach ensures responsible AI deployment while maintaining model effectiveness."""
                 
                 elements.append(Paragraph(risk_summary, styles['Normal']))
                 elements.append(Spacer(1, 0.2 * inch))
                 
-                # Final confidence metrics as text
+                # Confidence Assessment
                 elements.append(Paragraph("Confidence Assessment", styles['Heading2']))
                 elements.append(Spacer(1, 0.1 * inch))
                 
-                confidence_text = f"""Decision Confidence: {int(confidence * 100)}% - Based on comprehensive bias analysis, model performance evaluation, and risk assessment.
-                Risk Level: {overall_risk.get('risk_level', 'N/A')} - Determined through multi-factor bias analysis and ecosystem benchmarking.
-                Deployment Status: {decision} - Final recommendation based on technical readiness and risk tolerance.
-                Next Review: Recommended within 3-6 months or upon significant performance changes."""
+                confidence_text = f"""Deployment Confidence: {int(confidence_score * 100)}%
+                
+                This confidence level is based on:
+                - Model performance metrics ({accuracy_formatted} accuracy)
+                - Bias analysis results ({overall_risk.get('risk_percentage', 0)}% risk level)
+                - Effectiveness of mitigation strategies
+                - Quality of training data and validation procedures
+                
+                The confidence assessment reflects the readiness of the model for production deployment with appropriate monitoring and governance frameworks in place."""
                 
                 elements.append(Paragraph(confidence_text, styles['Normal']))
                 elements.append(Spacer(1, 0.3 * inch))
                 
-                # === COMPREHENSIVE CONCLUSION ===
-                elements.append(Paragraph("Conclusion & Strategic Recommendations", styles['Heading1']))
-                elements.append(Spacer(1, 0.2 * inch))
-                
-                conclusion_text = f"""This comprehensive governance analysis has provided a thorough examination of the dataset's fairness, performance, and deployment readiness. The findings indicate a {overall_risk.get('risk_level', 'N/A').lower()} risk profile with {overall_risk.get('risk_percentage', 0)}% overall bias risk, positioning the dataset favorably within the broader ecosystem of similar machine learning applications.
-                
-                The model's performance metrics, including {accuracy_formatted} accuracy and an F1 score of {f1_score:.3f}, demonstrate strong predictive capabilities while maintaining fairness across different demographic groups. The precision score of {precision:.3f} and recall score of {recall:.3f} indicate a well-balanced model that minimizes both false positives and false negatives, crucial for maintaining user trust and operational efficiency.
-                
-                Key strategic recommendations include:
-                
-                1. **Immediate Deployment**: With {int(confidence * 100)}% confidence, the dataset and model are ready for production deployment with standard monitoring protocols.
-                
-                2. **Continuous Monitoring**: Implement automated bias detection and performance monitoring to ensure ongoing fairness and accuracy.
-                
-                3. **Regular Review**: Schedule comprehensive reassessment within 3-6 months or upon significant changes in data distribution.
-                
-                4. **Stakeholder Communication**: Establish clear channels for reporting bias incidents and performance concerns.
-                
-                5. **Model Maintenance**: Plan for periodic retraining based on performance thresholds and data drift detection.
-                
-                The dataset's position at the {percentile}th risk percentile within the ecosystem suggests it represents a high-quality, well-balanced resource for machine learning applications. The comprehensive mitigation strategies outlined in this report provide a roadmap for maintaining fairness and reliability throughout the model's lifecycle.
-                
-                This analysis serves as both a validation of the current system's readiness and a foundation for ongoing governance and improvement. The combination of strong technical performance, low bias risk, and comprehensive mitigation planning creates a solid foundation for responsible AI deployment."""
-                
-                elements.append(Paragraph(conclusion_text, styles['Normal']))
-                elements.append(Spacer(1, 0.3 * inch))
-                
-                # Final Executive Summary
-                elements.append(Paragraph("Executive Summary", styles['Heading2']))
-                elements.append(Spacer(1, 0.1 * inch))
-                
-                exec_summary = f"""Dataset Status: READY FOR DEPLOYMENT
-                Risk Level: {overall_risk.get('risk_level', 'N/A')} ({overall_risk.get('risk_percentage', 0)}%)
-                Model Performance: {accuracy_formatted} accuracy, F1: {f1_score:.3f}
-                Confidence: {int(confidence * 100)}%
-                Recommendation: {decision}
-                
-                This dataset demonstrates exceptional qualities for production deployment, with strong performance metrics, low bias risk, and comprehensive governance frameworks in place. The combination of technical excellence and ethical considerations makes this an ideal candidate for responsible AI implementation."""
-                
-                elements.append(Paragraph(exec_summary, styles['Normal']))
+            else:
+                # Fallback if no mitigation data
+                elements.append(Paragraph("Mitigation strategies are being developed based on the bias analysis results. The deployment decision will be finalized once comprehensive mitigation plans are in place.", styles['Normal']))
                 elements.append(Spacer(1, 0.2 * inch))
                 
                 # === ADDITIONAL SECTIONS AFTER MITIGATION ===
@@ -605,30 +598,30 @@ class ReportBuilder:
                 elements.append(Spacer(1, 0.2 * inch))
                 
                 roadmap_text = f"""The successful deployment of this machine learning system requires a structured approach to implementation and ongoing management. Based on the comprehensive analysis conducted, the following roadmap provides clear guidance for the next 3-6 months.
-                
-                **Phase 1: Deployment Preparation (Weeks 1-2)**
-                - Finalize model configuration and hyperparameters
-                - Set up production environment with appropriate infrastructure
-                - Implement logging and monitoring systems
-                - Conduct final validation testing with production-like data
-                
-                **Phase 2: Production Launch (Weeks 3-4)**
-                - Deploy model to production environment with gradual rollout
-                - Implement real-time monitoring for performance and bias metrics
-                - Establish baseline performance metrics and alert thresholds
-                - Train operations team on model management and monitoring
-                
-                **Phase 3: Optimization & Monitoring (Weeks 5-12)**
-                - Monitor model performance across different demographic groups
-                - Collect feedback and identify areas for improvement
-                - Implement bias mitigation strategies as needed
-                - Schedule regular model retraining based on performance drift
-                
-                **Phase 4: Governance & Compliance (Ongoing)**
-                - Maintain comprehensive documentation of model performance
-                - Conduct regular bias audits and fairness assessments
-                - Update model based on new data and changing requirements
-                - Ensure compliance with regulatory requirements and ethical guidelines"""
+
+Phase 1: Deployment Preparation (Weeks 1-2)
+- Finalize model configuration and hyperparameters
+- Set up production environment with appropriate infrastructure
+- Implement logging and monitoring systems
+- Conduct final validation testing with production-like data
+
+Phase 2: Production Launch (Weeks 3-4)
+- Deploy model to production environment with gradual rollout
+- Implement real-time monitoring for performance and bias metrics
+- Establish baseline performance metrics and alert thresholds
+- Train operations team on model management and monitoring
+
+Phase 3: Optimization & Monitoring (Weeks 5-12)
+- Monitor model performance across different demographic groups
+- Collect feedback and identify areas for improvement
+- Implement bias mitigation strategies as needed
+- Schedule regular model retraining based on performance drift
+
+Phase 4: Governance & Compliance (Ongoing)
+- Maintain comprehensive documentation of model performance
+- Conduct regular bias audits and fairness assessments
+- Update model based on new data and changing requirements
+- Ensure compliance with regulatory requirements and ethical guidelines"""
                 
                 elements.append(Paragraph(roadmap_text, styles['Normal']))
                 elements.append(Spacer(1, 0.3 * inch))
@@ -638,30 +631,30 @@ class ReportBuilder:
                 elements.append(Spacer(1, 0.2 * inch))
                 
                 risk_framework_text = f"""A robust risk management framework is essential for maintaining the integrity and fairness of the machine learning system throughout its lifecycle. The following framework provides comprehensive guidelines for ongoing risk mitigation.
-                
-                **Risk Identification & Assessment**
-                - Continuous monitoring of bias metrics across demographic groups
-                - Regular assessment of model performance drift
-                - Identification of emerging bias patterns in new data
-                - Evaluation of model impact on different user segments
-                
-                **Risk Mitigation Strategies**
-                - Implement fairness-aware reweighting techniques as needed
-                - Apply adversarial debiasing methods when bias is detected
-                - Utilize ensemble methods to improve robustness
-                - Maintain diverse training datasets to represent all user groups
-                
-                **Monitoring & Alert Systems**
-                - Real-time monitoring of key performance indicators
-                - Automated alerts for bias detection and performance degradation
-                - Regular reporting on model fairness and accuracy
-                - Stakeholder notification protocols for critical issues
-                
-                **Continuous Improvement**
-                - Regular model retraining with updated data
-                - Incorporation of user feedback and model performance insights
-                - Adoption of new fairness techniques and best practices
-                - Ongoing research and development for bias mitigation"""
+
+Risk Identification & Assessment
+- Continuous monitoring of bias metrics across demographic groups
+- Regular assessment of model performance drift
+- Identification of emerging bias patterns in new data
+- Evaluation of model impact on different user segments
+
+Risk Mitigation Strategies
+- Implement fairness-aware reweighting techniques as needed
+- Apply adversarial debiasing methods when bias is detected
+- Utilize ensemble methods to improve robustness
+- Maintain diverse training datasets to represent all user groups
+
+Monitoring & Alert Systems
+- Real-time monitoring of key performance indicators
+- Automated alerts for bias detection and performance degradation
+- Regular reporting on model fairness and accuracy
+- Stakeholder notification protocols for critical issues
+
+Continuous Improvement
+- Regular model retraining with updated data
+- Incorporation of user feedback and model performance insights
+- Adoption of new fairness techniques and best practices
+- Ongoing research and development for bias mitigation"""
                 
                 elements.append(Paragraph(risk_framework_text, styles['Normal']))
                 elements.append(Spacer(1, 0.3 * inch))
@@ -671,30 +664,30 @@ class ReportBuilder:
                 elements.append(Spacer(1, 0.2 * inch))
                 
                 tech_specs_text = f"""The technical implementation of this machine learning system requires careful consideration of infrastructure, performance, and scalability requirements. The following specifications ensure optimal deployment and operation.
-                
-                **Infrastructure Requirements**
-                - Computing Resources: {ml_training.get('model', 'Random Forest')} model requires moderate computational resources
-                - Memory Requirements: Minimum 8GB RAM for production deployment
-                - Storage: Sufficient space for model files, training data, and logs
-                - Network: High-speed connectivity for real-time predictions
-                
-                **Performance Specifications**
-                - Response Time: Target <100ms for individual predictions
-                - Throughput: Support for concurrent user requests
-                - Accuracy: Maintain {accuracy_formatted} accuracy or higher in production
-                - Availability: 99.9% uptime with appropriate failover mechanisms
-                
-                **Data Management**
-                - Data Versioning: Track all training data versions and model iterations
-                - Backup Systems: Regular backups of model files and training data
-                - Security: Implement appropriate data encryption and access controls
-                - Privacy: Ensure compliance with data protection regulations
-                
-                **Integration Requirements**
-                - API Endpoints: RESTful API for model predictions and monitoring
-                - Database Integration: Connect to existing data storage systems
-                - Monitoring Tools: Integration with existing monitoring and alerting systems
-                - Documentation: Comprehensive API documentation and user guides"""
+
+Infrastructure Requirements
+- Computing Resources: {ml_training.get('model', 'Random Forest')} model requires moderate computational resources
+- Memory Requirements: Minimum 8GB RAM for production deployment
+- Storage: Sufficient space for model files, training data, and logs
+- Network: High-speed connectivity for real-time predictions
+
+Performance Specifications
+- Response Time: Target <100ms for individual predictions
+- Throughput: Support for concurrent user requests
+- Accuracy: Maintain {accuracy_formatted} accuracy or higher in production
+- Availability: 99.9% uptime with appropriate failover mechanisms
+
+Data Management
+- Data Versioning: Track all training data versions and model iterations
+- Backup Systems: Regular backups of model files and training data
+- Security: Implement appropriate data encryption and access controls
+- Privacy: Ensure compliance with data protection regulations
+
+Integration Requirements
+- API Endpoints: RESTful API for model predictions and monitoring
+- Database Integration: Connect to existing data storage systems
+- Monitoring Tools: Integration with existing monitoring and alerting systems
+- Documentation: Comprehensive API documentation and user guides"""
                 
                 elements.append(Paragraph(tech_specs_text, styles['Normal']))
                 elements.append(Spacer(1, 0.3 * inch))
@@ -704,32 +697,32 @@ class ReportBuilder:
                 elements.append(Spacer(1, 0.2 * inch))
                 
                 final_assessment_text = f"""After comprehensive analysis of the dataset, model performance, bias characteristics, and risk factors, this machine learning system demonstrates exceptional readiness for production deployment. The combination of strong technical performance, low bias risk, and comprehensive governance frameworks creates an ideal foundation for responsible AI implementation.
-                
-                **Key Strengths**
-                - Strong performance metrics with {accuracy_formatted} accuracy and {f1_score:.3f} F1 score
-                - Low overall bias risk at {overall_risk.get('risk_percentage', 0)}%
-                - Well-balanced class distribution supporting fair model training
-                - Comprehensive mitigation strategies and monitoring frameworks
-                - Professional-grade governance and compliance structures
-                
-                **Deployment Recommendation**
-                Based on the comprehensive analysis conducted, the system is **APPROVED FOR PRODUCTION DEPLOYMENT** with {int(confidence * 100)}% confidence. The deployment should proceed with standard monitoring protocols and regular review schedules as outlined in the implementation roadmap.
-                
-                **Success Metrics**
-                - Maintain accuracy above {accuracy_formatted} in production environment
-                - Keep bias metrics below established thresholds
-                - Achieve user satisfaction scores above 85%
-                - Maintain system availability of 99.9% or higher
-                - Complete regular bias audits and performance reviews
-                
-                **Next Steps**
-                1. Finalize deployment preparation activities
-                2. Implement monitoring and alerting systems
-                3. Conduct final validation testing
-                4. Execute gradual production rollout
-                5. Establish ongoing governance and review processes
-                
-                This machine learning system represents a significant achievement in responsible AI development, combining technical excellence with ethical considerations and comprehensive governance frameworks."""
+
+Key Strengths
+- Strong performance metrics with {accuracy_formatted} accuracy and {f1_score:.3f} F1 score
+- Low overall bias risk at {overall_risk.get('risk_percentage', 0)}%
+- Well-balanced class distribution supporting fair model training
+- Comprehensive mitigation strategies and monitoring frameworks
+- Professional-grade governance and compliance structures
+
+Deployment Recommendation
+Based on the comprehensive analysis conducted, the system is **APPROVED FOR PRODUCTION DEPLOYMENT** with {int(confidence_score * 100)}% confidence. The deployment should proceed with standard monitoring protocols and regular review schedules as outlined in the implementation roadmap.
+
+Success Metrics
+- Maintain accuracy above {accuracy_formatted} in production environment
+- Keep bias metrics below established thresholds
+- Achieve user satisfaction scores above 85%
+- Maintain system availability of 99.9% or higher
+- Complete regular bias audits and performance reviews
+
+Next Steps
+1. Finalize deployment preparation activities
+2. Implement monitoring and alerting systems
+3. Conduct final validation testing
+4. Execute gradual production rollout
+5. Establish ongoing governance and review processes
+
+This machine learning system represents a significant achievement in responsible AI development, combining technical excellence with ethical considerations and comprehensive governance frameworks."""
                 
                 elements.append(Paragraph(final_assessment_text, styles['Normal']))
                 elements.append(Spacer(1, 0.3 * inch))
