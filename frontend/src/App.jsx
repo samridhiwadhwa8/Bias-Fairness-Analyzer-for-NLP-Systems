@@ -715,38 +715,123 @@ function App() {
             </div>
           </div>
           
-          {/* Professional Report Summary */}
+          {/* Professional Report Summary with WOW Factor */}
           {phase7Report.results?.visual_paths && phase7Report.results.visual_paths.length > 0 && (
             <div className="card">
               <div className="card-header">
                 <BarChart3 className="card-icon" />
-                <h2 className="card-title">Professional Report Components</h2>
+                <h2 className="card-title"> Professional Governance Report</h2>
               </div>
-              <div className="mitigation-list">
-                <div className="mitigation-item">
-                  <span className="mitigation-bullet">📊</span>
-                  <span className="mitigation-text">5-Page Professional PDF Report</span>
+              
+              {/* Executive Summary */}
+              <div className="executive-summary">
+                <h3 className="section-title"> Executive Summary</h3>
+                <p className="executive-text">
+                  In today's data-driven landscape, ensuring fairness and reliability in machine learning systems is not just a technical requirement—it's a fundamental imperative. 
+                  This comprehensive governance report presents thorough analysis with actionable insights into bias, performance, and deployment readiness.
+                </p>
+              </div>
+              
+              {/* Report Components */}
+              <div className="report-components">
+                <h3 className="section-title"> Report Components</h3>
+                <div className="component-grid">
+                  <div className="component-item">
+                    <div className="component-icon"></div>
+                    <div className="component-content">
+                      <h4>Dataset Overview</h4>
+                      <p>Comprehensive analysis with strategic insights and class balance assessment</p>
+                    </div>
+                  </div>
+                  <div className="component-item">
+                    <div className="component-icon"></div>
+                    <div className="component-content">
+                      <h4>Model Performance</h4>
+                      <p>Advanced metrics including accuracy, precision, recall, and F1 score analysis</p>
+                    </div>
+                  </div>
+                  <div className="component-item">
+                    <div className="component-icon"></div>
+                    <div className="component-content">
+                      <h4>Bias Analysis</h4>
+                      <p>Demographic and linguistic bias assessment with risk breakdown</p>
+                    </div>
+                  </div>
+                  <div className="component-item">
+                    <div className="component-icon"></div>
+                    <div className="component-content">
+                      <h4>Risk Intelligence</h4>
+                      <p>Ecosystem benchmarking and missing values analysis with heatmaps</p>
+                    </div>
+                  </div>
+                  <div className="component-item">
+                    <div className="component-icon"></div>
+                    <div className="component-content">
+                      <h4>Mitigation Strategy</h4>
+                      <p>Comprehensive action plan with timeline and deployment guidance</p>
+                    </div>
+                  </div>
+                  <div className="component-item">
+                    <div className="component-icon"></div>
+                    <div className="component-content">
+                      <h4>Deployment Decision</h4>
+                      <p>Confidence assessment with next steps and monitoring framework</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="mitigation-item">
-                  <span className="mitigation-bullet">📈</span>
-                  <span className="mitigation-text">Class Distribution Chart</span>
+              </div>
+              
+              {/* Visualizations */}
+              <div className="visualizations-section">
+                <h3 className="section-title"> Professional Visualizations</h3>
+                <div className="viz-list">
+                  <div className="viz-item">
+                    <span className="viz-icon"></span>
+                    <span className="viz-name">Class Distribution Analysis</span>
+                    <span className="viz-status"> Generated</span>
+                  </div>
+                  <div className="viz-item">
+                    <span className="viz-icon"></span>
+                    <span className="viz-name">Confusion Matrix Heatmap</span>
+                    <span className="viz-status"> Generated</span>
+                  </div>
+                  <div className="viz-item">
+                    <span className="viz-icon"></span>
+                    <span className="viz-name">Bias Components Chart</span>
+                    <span className="viz-status"> Generated</span>
+                  </div>
+                  <div className="viz-item">
+                    <span className="viz-icon"></span>
+                    <span className="viz-name">Risk Breakdown Analysis</span>
+                    <span className="viz-status">Generated</span>
+                  </div>
+                  <div className="viz-item">
+                    <span className="viz-icon"></span>
+                    <span className="viz-name">Missing Values Heatmap</span>
+                    <span className="viz-status">Generated</span>
+                  </div>
                 </div>
-                <div className="mitigation-item">
-                  <span className="mitigation-bullet">🎯</span>
-                  <span className="mitigation-text">Confusion Matrix Analysis</span>
+              </div>
+              
+              {/* Download Section */}
+              <div className="download-section">
+                <div className="download-info">
+                  <h3 className="section-title"> Professional PDF Report</h3>
+                  <p>6-page comprehensive governance report with narrative analysis and embedded visualizations</p>
                 </div>
-                <div className="mitigation-item">
-                  <span className="mitigation-bullet">⚖️</span>
-                  <span className="mitigation-text">Bias Component Analysis</span>
-                </div>
-                <div className="mitigation-item">
-                  <span className="mitigation-bullet">📉</span>
-                  <span className="mitigation-text">Risk Breakdown & Percentile Charts</span>
-                </div>
-                <div className="mitigation-item">
-                  <span className="mitigation-bullet">📋</span>
-                  <span className="mitigation-text">Executive Summary & Mitigation Plan</span>
-                </div>
+                {phase7Report.results.pdf_path && (
+                  <button 
+                    onClick={() => {
+                      const filename = phase7Report.results.pdf_path.split('/').pop();
+                      const downloadUrl = `http://localhost:8000/phase7/download/${encodeURIComponent(filename)}`;
+                      window.open(downloadUrl, '_blank');
+                    }}
+                    className="btn btn-success"
+                    style={{ marginTop: '1rem' }}
+                  >
+                    📥 Download Professional Report
+                  </button>
+                )}
               </div>
             </div>
           )}

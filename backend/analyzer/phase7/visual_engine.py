@@ -219,14 +219,39 @@ class VisualEngine:
             
             fig, ax = plt.subplots(figsize=(8, 6))
             
-            # Create heatmap
-            sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
+            # Create enhanced heatmap with annotations
+            sns.heatmap(cm, annot=True, fmt='.1f', cmap='Blues', ax=ax,
                        xticklabels=[f'Pred {c}' for c in classes],
                        yticklabels=[f'True {c}' for c in classes])
             
             ax.set_title('Confusion Matrix', fontsize=16, fontweight='bold', pad=20)
             ax.set_xlabel('Predicted Label', fontsize=12)
             ax.set_ylabel('True Label', fontsize=12)
+            
+            # Add performance metrics as text
+            total_correct = int(np.trace(cm))
+            total_samples = int(np.sum(cm))
+            accuracy = total_correct / total_samples if total_samples > 0 else 0
+            
+            # Calculate precision and recall for each class
+            precision_scores = []
+            recall_scores = []
+            for i in range(len(classes)):
+                tp = cm[i, i]
+                fp = np.sum(cm[:, i]) - tp
+                fn = np.sum(cm[i, :]) - tp
+                precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+                recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+                precision_scores.append(precision)
+                recall_scores.append(recall)
+            
+            # Add metrics text
+            metrics_text = f'Accuracy: {accuracy:.3f}\n'
+            for i, cls in enumerate(classes):
+                metrics_text += f'Class {cls}: P={precision_scores[i]:.3f}, R={recall_scores[i]:.3f}\n'
+            
+            ax.text(1.02, 0.5, metrics_text, transform=ax.transAxes, fontsize=10,
+                   verticalalignment='center', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
             
             plt.tight_layout()
             
