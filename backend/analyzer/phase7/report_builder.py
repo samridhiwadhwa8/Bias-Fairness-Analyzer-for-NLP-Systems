@@ -182,18 +182,33 @@ class ReportBuilder:
             
             # Generate and embed the dashboard
             try:
+                print('🔍 DASHBOARD GENERATION: Starting dashboard generation...')
                 dashboard_fig = generate_dashboard(report)
-                img = self._embed_figure(dashboard_fig)
-                if img:
-                    # Full-page dashboard image
-                    img.drawWidth = 6.5 * inch
-                    img.drawHeight = 5 * inch
-                    elements.append(img)
-                    elements.append(Spacer(1, 0.3 * inch))
-                else:
-                    elements.append(Paragraph("Dashboard could not be embedded.", styles['Normal']))
+                print(f'🔍 DASHBOARD GENERATION: Dashboard figure type: {type(dashboard_fig)}')
+                print(f'🔍 DASHBOARD GENERATION: Dashboard figure created successfully')
+                
+                if dashboard_fig is None:
+                    print('🔍 DASHBOARD GENERATION: Dashboard figure is None')
+                    elements.append(Paragraph("Dashboard figure could not be created.", styles['Normal']))
                     elements.append(Spacer(1, 0.2 * inch))
+                else:
+                    print('🔍 DASHBOARD GENERATION: Attempting to embed dashboard...')
+                    img = self._embed_figure(dashboard_fig)
+                    print(f'🔍 DASHBOARD GENERATION: Embedded image type: {type(img)}')
+                    
+                    if img is not None:
+                        print('🔍 DASHBOARD GENERATION: Dashboard embedded successfully')
+                        # Dashboard image with dynamic full-page sizing
+                        elements.append(img)
+                        elements.append(Spacer(1, 0.3 * inch))
+                    else:
+                        print('🔍 DASHBOARD GENERATION: Dashboard embedding failed - img is None')
+                        elements.append(Paragraph("Dashboard could not be embedded - embedding failed.", styles['Normal']))
+                        elements.append(Spacer(1, 0.2 * inch))
             except Exception as e:
+                print(f'🔍 DASHBOARD GENERATION: Dashboard generation error: {e}')
+                import traceback
+                traceback.print_exc()
                 elements.append(Paragraph(f"Dashboard generation error: {str(e)}", styles['Normal']))
                 elements.append(Spacer(1, 0.2 * inch))
             
@@ -597,27 +612,27 @@ class ReportBuilder:
                 elements.append(Paragraph("Implementation Roadmap", styles['Heading1']))
                 elements.append(Spacer(1, 0.2 * inch))
                 
-                roadmap_text = f"""The successful deployment of this machine learning system requires a structured approach to implementation and ongoing management. Based on the comprehensive analysis conducted, the following roadmap provides clear guidance for the next 3-6 months.
+                roadmap_text = """The successful deployment of this machine learning system requires a structured approach to implementation and ongoing management. Based on the comprehensive analysis conducted, the following roadmap provides clear guidance for the next 3-6 months.
 
-Phase 1: Deployment Preparation (Weeks 1-2)
+• Phase 1: Deployment Preparation (Weeks 1-2)
 - Finalize model configuration and hyperparameters
 - Set up production environment with appropriate infrastructure
 - Implement logging and monitoring systems
 - Conduct final validation testing with production-like data
 
-Phase 2: Production Launch (Weeks 3-4)
+• Phase 2: Production Launch (Weeks 3-4)
 - Deploy model to production environment with gradual rollout
 - Implement real-time monitoring for performance and bias metrics
 - Establish baseline performance metrics and alert thresholds
 - Train operations team on model management and monitoring
 
-Phase 3: Optimization & Monitoring (Weeks 5-12)
+• Phase 3: Optimization & Monitoring (Weeks 5-12)
 - Monitor model performance across different demographic groups
 - Collect feedback and identify areas for improvement
 - Implement bias mitigation strategies as needed
 - Schedule regular model retraining based on performance drift
 
-Phase 4: Governance & Compliance (Ongoing)
+• Phase 4: Governance & Compliance (Ongoing)
 - Maintain comprehensive documentation of model performance
 - Conduct regular bias audits and fairness assessments
 - Update model based on new data and changing requirements
@@ -730,18 +745,18 @@ This machine learning system represents a significant achievement in responsible
             # Build PDF
             try:
                 doc.build(elements)
-                print(f"✅ PDF generated successfully: {filename}")
+                print(f" PDF generated successfully: {filename}")
                 return filename
             except Exception as pdf_error:
-                print(f"❌ PDF build error: {pdf_error}")
+                print(f" PDF build error: {pdf_error}")
                 return None
             
         except ImportError as e:
-            print(f"❌ ReportLab import error: {e}")
-            print("❌ CRITICAL: ReportLab is required for PDF generation!")
+            print(f" ReportLab import error: {e}")
+            print(" CRITICAL: ReportLab is required for PDF generation!")
             return None
         except Exception as e:
-            print(f"❌ Error generating PDF: {e}")
+            print(f" Error generating PDF: {e}")
             return None
     
     def _embed_figure(self, fig):
@@ -750,21 +765,39 @@ This machine learning system represents a significant achievement in responsible
             import io
             from reportlab.platypus import Image
             from reportlab.lib.units import inch
+            from reportlab.lib.pagesizes import A4
             
-            # Save figure to in-memory buffer
+            print(f'🔍 EMBED DEBUG: Starting figure embedding...')
+            print(f'🔍 EMBED DEBUG: Figure type: {type(fig)}')
+            print(f'🔍 EMBED DEBUG: Figure size: {fig.get_size_inches()}')
+            
+            # Save figure to in-memory buffer with safe DPI
             buffer = io.BytesIO()
-            fig.savefig(buffer, format='PNG', dpi=300, bbox_inches='tight')
+            fig.savefig(buffer, format='PNG', dpi=200, bbox_inches='tight')  # Safe DPI for PDF
             buffer.seek(0)
             
-            # Create image from buffer with larger size
-            img = Image(buffer, width=5.5*inch, height=3.5*inch)
+            print(f'🔍 EMBED DEBUG: Buffer created, size: {buffer.getbuffer().nbytes} bytes')
+            
+            # Dynamic page width calculation
+            page_width = A4[0] - 80  # subtract margins
+            print(f'🔍 EMBED DEBUG: Page width calculated: {page_width}')
+            
+            # Create image and set proportional scaling
+            img = Image(buffer)
+            img.drawWidth = page_width  # Fill page width
+            img.drawHeight = page_width * 0.75  # 4:3 ratio safe for dashboard
+            
+            print(f'🔍 EMBED DEBUG: Image created with drawWidth: {img.drawWidth}, drawHeight: {img.drawHeight}')
             
             # Close the figure to free memory
             import matplotlib.pyplot as plt
             plt.close(fig)
             
+            print(f'🔍 EMBED DEBUG: Figure embedding completed successfully')
             return img
             
         except Exception as e:
-            print(f"❌ Error embedding figure: {e}")
+            print(f'🔍 EMBED DEBUG: Error embedding figure: {e}')
+            import traceback
+            traceback.print_exc()
             return None

@@ -15,18 +15,29 @@ def safe_get(report, *keys, default=None):
     return data
 
 def generate_dashboard(report: Dict[str, Any]):
-    """
-    Generate a 2x2 dashboard with 4 professional charts.
+    """Generate a comprehensive dashboard figure."""
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import seaborn as sns
     
-    Args:
-        report: Combined report from Phase 4-6 analysis
-        
-    Returns:
-        matplotlib figure object (not saved to disk)
-    """
-    # Create 2x2 grid layout
-    fig, axes = plt.subplots(2, 2, figsize=(11, 8))
+    # Create figure with 3 charts layout (2x2 grid, but we'll use only 3)
+    fig, axes = plt.subplots(2, 2, figsize=(8, 6))  # Safe size for PDF
     fig.patch.set_facecolor('white')
+    
+    # Remove the top-right subplot (ML Algorithm Performance)
+    fig.delaxes(axes[0, 1])
+    
+    # Debug: Check if axes are created properly
+    print(f"🔍 DASHBOARD DEBUG: axes shape = {axes.shape}")
+    print(f"🔍 DASHBOARD DEBUG: axes type = {type(axes)}")
+    
+    # Get the remaining 3 axes in correct order
+    ax1 = axes[0, 0]  # Top-left (Class Distribution)
+    ax2 = axes[1, 0]  # Bottom-left (Risk Breakdown)
+    ax3 = axes[1, 1]  # Bottom-right (Dataset Size)
+    
+    # Create a list of the 3 axes
+    axes = [ax1, ax2, ax3]
     
     # Extract data using safe_get
     class_dist = safe_get(report, "ml_training", "class_imbalance_details", "class_distribution", default={})
@@ -41,8 +52,20 @@ def generate_dashboard(report: Dict[str, Any]):
     balance = safe_get(report, "phase6", "profile", "balance", default="Unavailable")
     dataset_overview = safe_get(report, "dataset_overview", default={})
     
+    # Debug output for bias_breakdown
+    print(f"🔍 BIAS DEBUG: bias_breakdown = {bias_breakdown}")
+    print(f"🔍 BIAS DEBUG: overall_risk = {overall_risk}")
+    
+    # Additional debug for overall_risk structure
+    if overall_risk:
+        print(f"🔍 BIAS DEBUG: overall_risk keys = {list(overall_risk.keys())}")
+        if 'breakdown' in overall_risk:
+            print(f"🔍 BIAS DEBUG: breakdown keys = {list(overall_risk['breakdown'].keys())}")
+    else:
+        print("🔍 BIAS DEBUG: No 'breakdown' key in overall_risk")
+    
     # === TOP-LEFT: Class Distribution ===
-    ax = axes[0, 0]
+    ax = axes[0]
     if class_dist:
         classes = list(class_dist.keys())
         counts = list(class_dist.values())
@@ -59,64 +82,13 @@ def generate_dashboard(report: Dict[str, Any]):
             height = bar.get_height()
             ax.text(bar.get_x() + bar.get_width()/2., height + max(counts)*0.01,
                     f'{count:,}', ha='center', va='bottom', fontsize=9, fontweight='bold')
+        print(f"🔍 CLASS CHART: Created with {len(classes)} classes")
     else:
         ax.text(0.5, 0.5, 'Data Not Available', ha='center', va='center', transform=ax.transAxes)
         ax.set_title("Class Distribution", fontsize=12, fontweight='bold')
     
-    # === TOP-RIGHT: Bias Components ===
-    ax = axes[0, 1]
-    
-    # Debug output
-    print(f"🔍 BIAS DEBUG: bias_breakdown = {bias_breakdown}")
-    
-    if bias_breakdown:
-        components = list(bias_breakdown.keys())
-        values = list(bias_breakdown.values())
-        colors = ['#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][:len(components)]
-        
-        # Create horizontal bar chart
-        y_pos = np.arange(len(components))
-        bars = ax.barh(y_pos, values, color=colors, alpha=0.8, edgecolor='white', linewidth=2)
-        ax.set_yticks(y_pos)
-        ax.set_yticklabels([comp.title() for comp in components])
-        ax.set_xlabel("Risk Score", fontsize=10)
-        ax.set_title("Bias Components", fontsize=12, fontweight='bold', pad=10)
-        ax.grid(True, alpha=0.3, axis='x')
-        
-        # Add value labels
-        for i, (bar, val) in enumerate(zip(bars, values)):
-            ax.text(val + max(values)*0.01, i, f'{val}', ha='left', va='center', fontsize=9, fontweight='bold')
-        
-        # Add bias analysis summary
-        bias_analysis = report.get("bias_analysis", {})
-        demographic_bias = bias_analysis.get("demographic_bias", {})
-        linguistic_bias = bias_analysis.get("linguistic_bias", {})
-        
-        # Add bias detection status
-        demo_detected = demographic_bias.get("detected", False)
-        demo_score = demographic_bias.get("score", 0)
-        demo_columns = demographic_bias.get("columns", [])
-        
-        ling_detected = linguistic_bias.get("detected", False)
-        ling_score = linguistic_bias.get("score", 0)
-        
-        bias_summary = f"Demographic Bias: {'Detected' if demo_detected else 'Not Detected'} (Score: {demo_score:.2f})"
-        if demo_columns:
-            bias_summary += f" - Columns: {', '.join(demo_columns)}"
-        
-        bias_summary += f"\nLinguistic Bias: {'Detected' if ling_detected else 'Not Detected'} (Score: {ling_score:.2f})"
-        
-        ax.text(0.02, 0.98, bias_summary, transform=ax.transAxes, fontsize=8, 
-                verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
-        
-        print(f"🔍 BIAS CHART: Created with {len(components)} components")
-    else:
-        print("🔍 BIAS CHART: No bias_breakdown data available")
-        ax.text(0.5, 0.5, 'Bias Data Not Available', ha='center', va='center', transform=ax.transAxes)
-        ax.set_title("Bias Components", fontsize=12, fontweight='bold')
-    
     # === BOTTOM-LEFT: Risk Breakdown ===
-    ax = axes[1, 0]
+    ax = axes[1]
     if overall_risk:
         risk_level = overall_risk.get("risk_level", "N/A")
         risk_percentage = overall_risk.get("risk_percentage", 0)
@@ -125,32 +97,33 @@ def generate_dashboard(report: Dict[str, Any]):
         risk_color = '#10b981' if risk_percentage < 25 else '#f59e0b' if risk_percentage < 75 else '#ef4444'
         
         # Background bar
-        ax.barh(0, 100, height=0.5, color='lightgray', alpha=0.3)
+        ax.barh(0, 100, height=0.3, color='lightgray', alpha=0.3)
         
-        # Risk bar
-        ax.barh(0, risk_percentage, height=0.5, color=risk_color, alpha=0.8)
+        # Risk percentage bar
+        ax.barh(0, risk_percentage, height=0.3, color=risk_color, alpha=0.8)
         
         ax.set_xlim(0, 100)
         ax.set_ylim(-0.5, 0.5)
         ax.set_xlabel("Risk Percentage", fontsize=10)
         ax.set_yticks([])
-        ax.set_title(f"Risk Level: {risk_level}", fontsize=12, fontweight='bold', pad=10)
+        ax.set_title("Risk Breakdown", fontsize=12, fontweight='bold', pad=10)
         ax.grid(True, alpha=0.3, axis='x')
         
-        # Add percentage text
-        ax.text(risk_percentage, 0, f'{risk_percentage}%', ha='center', va='center', 
-                fontsize=12, fontweight='bold', color='white')
+        # Add risk level text
+        ax.text(risk_percentage, 0, f'{risk_percentage}th', ha='center', va='center', 
+                fontsize=10, fontweight='bold', color='white')
         
         # Add risk level zones
         ax.axvspan(0, 25, alpha=0.1, color='green', label='Low')
         ax.axvspan(25, 75, alpha=0.1, color='orange', label='Medium')
         ax.axvspan(75, 100, alpha=0.1, color='red', label='High')
+        print(f"🔍 RISK CHART: Created with {risk_percentage}% risk level")
     else:
         ax.text(0.5, 0.5, 'Data Not Available', ha='center', va='center', transform=ax.transAxes)
         ax.set_title("Risk Breakdown", fontsize=12, fontweight='bold')
     
     # === BOTTOM-RIGHT: Dataset Size Analysis ===
-    ax = axes[1, 1]
+    ax = axes[2]
     if dataset_overview:
         total_rows = dataset_overview.get("total_rows", 0)
         available_columns = dataset_overview.get("available_columns", [])
@@ -176,28 +149,25 @@ def generate_dashboard(report: Dict[str, Any]):
         dataset_type = dataset_overview.get("dataset_type", "Unknown")
         ax.text(0.5, -0.3, f'Dataset Type: {dataset_type.title()}', 
                 ha='center', va='center', fontsize=9, style='italic', transform=ax.transData)
+        print(f"🔍 DATASET CHART: Created with {total_rows} rows, {num_columns} columns")
     else:
         ax.text(0.5, 0.5, 'Data Not Available', ha='center', va='center', transform=ax.transAxes)
         ax.set_title("Dataset Size Analysis", fontsize=12, fontweight='bold')
     
-    # === GLOBAL TITLE AND STYLING ===
-    fig.suptitle(
-        "Dataset Intelligence Dashboard",
-        fontsize=16,
-        fontweight="bold",
-        y=0.98,
-        color='#1f2937'
-    )
+    # === GLOBAL STYLING ===
+    # Removed global title as requested
     
     # Style all subplots
-    for ax in axes.flat:
+    for ax in axes:
         ax.tick_params(axis='both', which='major', labelsize=8)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['left'].set_color('#e5e7eb')
         ax.spines['bottom'].set_color('#e5e7eb')
     
-    # Prevent overlap
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    # Use regular tight_layout instead of with rect to avoid margin issues
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.92)  # Adjust top margin for title
     
+    print(f"🔍 DASHBOARD DEBUG: Final figure created successfully")
     return fig

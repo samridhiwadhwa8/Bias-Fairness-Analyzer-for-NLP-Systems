@@ -35,7 +35,7 @@ class Phase7Engine:
     
     def generate_governance_report(self, report: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Generate complete governance report from Phase 4-6 analysis.
+        Generate complete governance report from Phase 4-6 results.
         
         Args:
             report: Combined report containing all Phase 4-6 results
@@ -44,6 +44,11 @@ class Phase7Engine:
             Dictionary with visual paths and PDF path
         """
         try:
+            # Safe check for None report
+            if report is None:
+                print(" Phase7: Report is None, creating empty report")
+                report = {}
+            
             # Generate all visualizations as matplotlib figures
             figures = {}
             if self.visual_engine:

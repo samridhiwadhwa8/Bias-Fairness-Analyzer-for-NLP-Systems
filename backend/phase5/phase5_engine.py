@@ -31,20 +31,20 @@ class Phase5Engine:
         Returns:
             Dictionary with comprehensive risk intelligence and actionable insights
         """
-        # Execute all Phase 5 modules
+        # Execute all Phase 5 modules with safe handling
         overall_risk = report.get("overall_risk") or {}
-        interpretation = self.interpreter.interpret(overall_risk)
-        mitigation = self.mitigation.recommend(report)
-        deployment = self.deployment.evaluate(report)
-        compliance = self.compliance.map_compliance(report)
+        interpretation = self.interpreter.interpret(overall_risk) or {}
+        mitigation = self.mitigation.recommend(report) or {}
+        deployment = self.deployment.evaluate(report) or {}
+        compliance = self.compliance.map_compliance(report) or {}
         
-        # Generate executive summary
+        # Generate executive summary with safe handling
         executive_summary = self._generate_executive_summary(
             interpretation, mitigation, deployment, compliance
-        )
+        ) or {}
         
-        # Create action plan
-        action_plan = self._create_action_plan(deployment, mitigation, compliance)
+        # Create action plan with safe handling
+        action_plan = self._create_action_plan(deployment, mitigation, compliance) or {}
         
         return {
             "executive_summary": executive_summary,
@@ -67,16 +67,17 @@ class Phase5Engine:
                                  compliance: Dict[str, Any]) -> Dict[str, Any]:
         """Generate executive summary for stakeholders."""
         
-        risk_level = interpretation.get("risk_level", "Low")
-        deployment_decision = deployment.get("deployment_decision", "Approved")
-        regulatory_risk = compliance.get("regulatory_risk", {}).get("level", "Low")
+        # Safe extraction with defaults
+        risk_level = interpretation.get("risk_level", "Low") if interpretation else "Low"
+        deployment_decision = deployment.get("deployment_decision", "Approved") if deployment else "Approved"
+        regulatory_risk = compliance.get("regulatory_risk", {}).get("level", "Low") if compliance and compliance.get("regulatory_risk") else "Low"
         
         # Key insights
         key_insights = [
-            f"Risk Level: {risk_level} ({interpretation.get('risk_percentage', 0)}%)",
+            f"Risk Level: {risk_level} ({interpretation.get('risk_percentage', 0)}%)" if interpretation else "Risk Level: Low (0%)",
             f"Deployment Decision: {deployment_decision}",
             f"Regulatory Risk: {regulatory_risk}",
-            f"Mitigation Complexity: {mitigation.get('implementation_complexity', 'Low')}"
+            f"Mitigation Complexity: {mitigation.get('implementation_complexity', 'Low')}" if mitigation else "Mitigation Complexity: Low"
         ]
         
         # Immediate actions
@@ -87,12 +88,12 @@ class Phase5Engine:
             immediate_actions.append("Focus on model performance improvement")
         if regulatory_risk in ["Medium", "High"]:
             immediate_actions.append("Initiate compliance review")
-        if mitigation.get("priority_actions"):
+        if mitigation and mitigation.get("priority_actions"):
             immediate_actions.extend(mitigation.get("priority_actions", [])[:2])
         
         # Timeline overview
-        timeline = interpretation.get("deployment_timeline", "Immediate")
-        mitigation_timeline = mitigation.get("estimated_timeline", "1-2 weeks")
+        timeline = interpretation.get("deployment_timeline", "Immediate") if interpretation else "Immediate"
+        mitigation_timeline = mitigation.get("estimated_timeline", "1-2 weeks") if mitigation else "1-2 weeks"
         
         return {
             "overall_assessment": self._get_overall_assessment(deployment_decision, regulatory_risk),
@@ -110,9 +111,11 @@ class Phase5Engine:
                           compliance: Dict[str, Any]) -> Dict[str, Any]:
         """Create structured action plan."""
         
-        deployment_conditions = deployment.get("deployment_conditions", [])
-        mitigation_actions = mitigation.get("recommended_actions", [])
-        compliance_requirements = compliance.get("compliance_requirements", [])
+        # Safe extraction with defaults
+        deployment_conditions = deployment.get("deployment_conditions", []) if deployment else []
+        mitigation_actions = mitigation.get("recommended_actions", []) if mitigation else []
+        compliance_requirements = compliance.get("compliance_requirements", []) if compliance else []
+        deployment_decision = deployment.get("deployment_decision", "") if deployment else ""
         
         # Prioritize actions
         high_priority = []
@@ -120,18 +123,19 @@ class Phase5Engine:
         low_priority = []
         
         # High priority actions
-        if "Comprehensive Mitigation Required" in deployment.get("deployment_decision", ""):
+        if "Comprehensive Mitigation Required" in deployment_decision:
             high_priority.extend([
                 "Address significant bias issues",
                 "Implement comprehensive mitigation plan"
             ])
-        elif "Performance Improvement Required" in deployment.get("deployment_decision", ""):
+        elif "Performance Improvement Required" in deployment_decision:
             high_priority.extend([
                 "Improve model performance metrics",
                 "Optimize algorithm efficiency"
             ])
         
-        high_priority.extend(mitigation.get("priority_actions", []))
+        if mitigation and mitigation.get("priority_actions"):
+            high_priority.extend(mitigation.get("priority_actions", []))
         
         # Medium priority actions
         medium_priority.extend(mitigation_actions[:3])

@@ -40,13 +40,15 @@ class Phase6Engine:
 
         risk = risk_data["risk_percentage"]
 
-        profile = self.profiler.profile(report)
-
-        percentile = self.benchmark.calculate_percentile(risk)
-        position = self.benchmark.interpret(percentile)
-
-        recommendations = self.recommender.generate(report)
-        alternatives = self.kaggle.suggest(profile["fingerprint"])
+        # Safe execution with fallbacks
+        profile = self.profiler.profile(report) or {}
+        percentile = self.benchmark.calculate_percentile(risk) or 0
+        position = self.benchmark.interpret(percentile) or "Unknown"
+        recommendations = self.recommender.generate(report) or {}
+        
+        # Safe fingerprint access
+        fingerprint = profile.get("fingerprint", "unknown")
+        alternatives = self.kaggle.suggest(fingerprint) if fingerprint else []
 
         return {
             "profile": profile,

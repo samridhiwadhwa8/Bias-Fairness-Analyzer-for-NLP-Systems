@@ -30,6 +30,11 @@ class VisualEngine:
         Returns:
             Dictionary of matplotlib figure objects
         """
+        # Safe check for None report
+        if report is None:
+            print("🔍 VisualEngine: Report is None, returning empty figures")
+            return {}
+        
         figures = {}
         
         # 1. Class Distribution Bar Chart
