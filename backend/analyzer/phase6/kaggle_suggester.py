@@ -12,13 +12,13 @@ class KaggleSuggester:
     ARCHETYPES = {
         "med-cls-T-MI": [
             {"name": "Pima Indians Diabetes", "domain": "medical", "url": "https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database"},
-            {"name": "Heart Disease UCI", "domain": "medical", "url": "https://www.kaggle.com/datasets/redwankar/song-data-heart-disease-uci"},
-            {"name": "Breast Cancer Wisconsin", "domain": "medical", "url": "https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin"}
+            {"name": "Heart Disease ", "domain": "medical", "url": "https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset"},
+            {"name": "Breast Cancer Wisconsin", "domain": "medical", "url": "https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data"}
         ],
         "med-cls-S-MI": [
             {"name": "Diabetes Dataset", "domain": "medical", "url": "https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database"},
             {"name": "Stroke Prediction Dataset", "domain": "medical", "url": "https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset"},
-            {"name": "Chronic Kidney Disease", "domain": "medical", "url": "https://www.kaggle.com/datasets/mansoordoom/chronic-kidney-disease"}
+            {"name": "Chronic Kidney Disease", "domain": "medical", "url": "https://www.kaggle.com/datasets/mansoordaku/ckdisease"}
         ],
         "med-cls-M-HI": [
             {"name": "Heart Failure Prediction", "domain": "medical", "url": "https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction"},

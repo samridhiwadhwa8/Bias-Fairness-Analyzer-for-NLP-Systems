@@ -249,6 +249,7 @@ class ReportBuilder:
             elements.append(Spacer(1, 0.3 * inch))
             
             # Enhanced Confusion Matrix with heatmap for missing values
+            # Direct to confusion matrix (removed individual Risk Breakdown chart)
             if figures.get("confusion_matrix"):
                 elements.append(Paragraph("Confusion Matrix Analysis", styles['Heading2']))
                 elements.append(Spacer(1, 0.1 * inch))

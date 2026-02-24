@@ -490,7 +490,7 @@ function App() {
         {/* Phase 5 Risk Intelligence */}
         {phase5Report && (
         <div className="phase5-section">
-          <h2 className="section-title">🧠 Risk Intelligence & Action Plan</h2>
+          <h2 className="section-title"> Risk Intelligence & Action Plan</h2>
           
           {/* Executive Summary */}
           <div className="card">
@@ -585,7 +585,7 @@ function App() {
       {/* Phase 6 Dataset Intelligence */}
       {phase6Report && (
         <div className="phase5-section">
-          <h2 className="section-title">📊 Dataset Intelligence & Ecosystem Analysis</h2>
+          <h2 className="section-title"> Dataset Intelligence & Ecosystem Analysis</h2>
           
           {/* Dataset Profile */}
           <div className="card">
@@ -685,7 +685,7 @@ function App() {
       {/* Phase 7 Dataset Governance */}
       {phase7Report && (
         <div className="phase5-section">
-          <h2 className="section-title">📋 Dataset Governance Report</h2>
+          <h2 className="section-title"> Dataset Governance Report</h2>
           
           {/* Report Actions */}
           <div className="card">
@@ -829,7 +829,7 @@ function App() {
                     className="btn btn-success"
                     style={{ marginTop: '1rem' }}
                   >
-                    📥 Download Professional Report
+                     Download Professional Report
                   </button>
                 )}
               </div>

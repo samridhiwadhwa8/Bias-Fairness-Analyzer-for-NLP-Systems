@@ -28,8 +28,8 @@ def generate_dashboard(report: Dict[str, Any]):
     fig.delaxes(axes[0, 1])
     
     # Debug: Check if axes are created properly
-    print(f"🔍 DASHBOARD DEBUG: axes shape = {axes.shape}")
-    print(f"🔍 DASHBOARD DEBUG: axes type = {type(axes)}")
+    print(f" DASHBOARD DEBUG: axes shape = {axes.shape}")
+    print(f" DASHBOARD DEBUG: axes type = {type(axes)}")
     
     # Get the remaining 3 axes in correct order
     ax1 = axes[0, 0]  # Top-left (Class Distribution)
@@ -53,16 +53,16 @@ def generate_dashboard(report: Dict[str, Any]):
     dataset_overview = safe_get(report, "dataset_overview", default={})
     
     # Debug output for bias_breakdown
-    print(f"🔍 BIAS DEBUG: bias_breakdown = {bias_breakdown}")
-    print(f"🔍 BIAS DEBUG: overall_risk = {overall_risk}")
+    print(f" BIAS DEBUG: bias_breakdown = {bias_breakdown}")
+    print(f" BIAS DEBUG: overall_risk = {overall_risk}")
     
     # Additional debug for overall_risk structure
     if overall_risk:
-        print(f"🔍 BIAS DEBUG: overall_risk keys = {list(overall_risk.keys())}")
+        print(f" BIAS DEBUG: overall_risk keys = {list(overall_risk.keys())}")
         if 'breakdown' in overall_risk:
-            print(f"🔍 BIAS DEBUG: breakdown keys = {list(overall_risk['breakdown'].keys())}")
+            print(f" BIAS DEBUG: breakdown keys = {list(overall_risk['breakdown'].keys())}")
     else:
-        print("🔍 BIAS DEBUG: No 'breakdown' key in overall_risk")
+        print(" BIAS DEBUG: No 'breakdown' key in overall_risk")
     
     # === TOP-LEFT: Class Distribution ===
     ax = axes[0]
@@ -82,7 +82,7 @@ def generate_dashboard(report: Dict[str, Any]):
             height = bar.get_height()
             ax.text(bar.get_x() + bar.get_width()/2., height + max(counts)*0.01,
                     f'{count:,}', ha='center', va='bottom', fontsize=9, fontweight='bold')
-        print(f"🔍 CLASS CHART: Created with {len(classes)} classes")
+        print(f" CLASS CHART: Created with {len(classes)} classes")
     else:
         ax.text(0.5, 0.5, 'Data Not Available', ha='center', va='center', transform=ax.transAxes)
         ax.set_title("Class Distribution", fontsize=12, fontweight='bold')
@@ -117,7 +117,7 @@ def generate_dashboard(report: Dict[str, Any]):
         ax.axvspan(0, 25, alpha=0.1, color='green', label='Low')
         ax.axvspan(25, 75, alpha=0.1, color='orange', label='Medium')
         ax.axvspan(75, 100, alpha=0.1, color='red', label='High')
-        print(f"🔍 RISK CHART: Created with {risk_percentage}% risk level")
+        print(f" RISK CHART: Created with {risk_percentage}% risk level")
     else:
         ax.text(0.5, 0.5, 'Data Not Available', ha='center', va='center', transform=ax.transAxes)
         ax.set_title("Risk Breakdown", fontsize=12, fontweight='bold')
@@ -149,7 +149,7 @@ def generate_dashboard(report: Dict[str, Any]):
         dataset_type = dataset_overview.get("dataset_type", "Unknown")
         ax.text(0.5, -0.3, f'Dataset Type: {dataset_type.title()}', 
                 ha='center', va='center', fontsize=9, style='italic', transform=ax.transData)
-        print(f"🔍 DATASET CHART: Created with {total_rows} rows, {num_columns} columns")
+        print(f" DATASET CHART: Created with {total_rows} rows, {num_columns} columns")
     else:
         ax.text(0.5, 0.5, 'Data Not Available', ha='center', va='center', transform=ax.transAxes)
         ax.set_title("Dataset Size Analysis", fontsize=12, fontweight='bold')
@@ -169,5 +169,5 @@ def generate_dashboard(report: Dict[str, Any]):
     plt.tight_layout()
     plt.subplots_adjust(top=0.92)  # Adjust top margin for title
     
-    print(f"🔍 DASHBOARD DEBUG: Final figure created successfully")
+    print(f" DASHBOARD DEBUG: Final figure created successfully")
     return fig

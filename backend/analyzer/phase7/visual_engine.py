@@ -239,7 +239,7 @@ class VisualEngine:
                        xticklabels=[f'Pred {c}' for c in classes],
                        yticklabels=[f'True {c}' for c in classes])
             
-            ax.set_title('Confusion Matrix', fontsize=16, fontweight='bold', pad=20)
+            # Removed title as requested - metrics will serve as the header
             ax.set_xlabel('Predicted Label', fontsize=12)
             ax.set_ylabel('True Label', fontsize=12)
             
@@ -260,13 +260,15 @@ class VisualEngine:
                 precision_scores.append(precision)
                 recall_scores.append(recall)
             
-            # Add metrics text
-            metrics_text = f'Accuracy: {accuracy:.3f}\n'
+            # Create metrics text for figure space (above the plot)
+            metrics_text = f"Accuracy: {accuracy:.3f}"
             for i, cls in enumerate(classes):
-                metrics_text += f'Class {cls}: P={precision_scores[i]:.3f}, R={recall_scores[i]:.3f}\n'
+                metrics_text += f"  |  Class {cls}: P={precision_scores[i]:.3f}, R={recall_scores[i]:.3f}"
             
-            ax.text(1.02, 0.5, metrics_text, transform=ax.transAxes, fontsize=10,
-                   verticalalignment='center', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+            # Place metrics in figure space above the plot (higher positioning)
+            fig.text(0.5, 0.98, metrics_text, ha='center', fontsize=12, fontweight='bold')
+            
+            plt.tight_layout(rect=[0, 0, 1, 0.88])  # Reserve more top space for metrics
             
             plt.tight_layout()
             
