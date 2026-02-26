@@ -56,7 +56,7 @@ class Phase7Engine:
             
             # Calculate additional ML metrics if not present
             ml_training = report.get("ml_training", {})
-            print(f"🔍 ML Training before enhancement: {list(ml_training.keys())}")
+            print(f" ML Training before enhancement: {list(ml_training.keys())}")
             
             if 'precision' not in ml_training or 'recall' not in ml_training:
                 print("🔧 Calculating precision and recall...")
@@ -96,22 +96,22 @@ class Phase7Engine:
                     ml_training['precision'] = weighted_precision
                     ml_training['recall'] = weighted_recall
                     
-                    print(f"✅ Calculated precision: {weighted_precision:.3f}")
-                    print(f"✅ Calculated recall: {weighted_recall:.3f}")
+                    print(f" Calculated precision: {weighted_precision:.3f}")
+                    print(f" Calculated recall: {weighted_recall:.3f}")
                     
                     # Update the report with calculated metrics
                     report['ml_training'] = ml_training
-                    print(f"🔍 ML Training after enhancement: {list(report['ml_training'].keys())}")
+                    print(f" ML Training after enhancement: {list(report['ml_training'].keys())}")
                 else:
-                    print("❌ Class distribution not available for precision/recall calculation")
+                    print(" Class distribution not available for precision/recall calculation")
             else:
-                print("✅ Precision and recall already present")
+                print(" Precision and recall already present")
             
             # Generate PDF report with embedded figures
             pdf_path = None
             if self.report_builder:
                 pdf_path = self.report_builder.generate_pdf_report(report, figures)
-                print(f"📄 PDF Generation Result: {pdf_path}")
+                print(f" PDF Generation Result: {pdf_path}")
             
             return {
                 "visual_paths": list(figures.keys()),  # Return figure names for reference
