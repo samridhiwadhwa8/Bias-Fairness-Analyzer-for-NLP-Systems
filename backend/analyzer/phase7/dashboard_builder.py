@@ -43,13 +43,6 @@ def generate_dashboard(report: Dict[str, Any]):
     class_dist = safe_get(report, "ml_training", "class_imbalance_details", "class_distribution", default={})
     bias_breakdown = safe_get(report, "overall_risk", "breakdown", default={})
     overall_risk = safe_get(report, "overall_risk", default={})
-    risk_percentile = safe_get(report, "phase6", "risk_percentile", default=None)
-    market_position = safe_get(report, "phase6", "market_position", default="N/A")
-    fingerprint = safe_get(report, "phase6", "profile", "fingerprint", default="Unavailable")
-    domain = safe_get(report, "phase6", "profile", "domain", default="Unavailable")
-    task = safe_get(report, "phase6", "profile", "task", default="Unavailable")
-    size = safe_get(report, "phase6", "profile", "size", default="Unavailable")
-    balance = safe_get(report, "phase6", "profile", "balance", default="Unavailable")
     dataset_overview = safe_get(report, "dataset_overview", default={})
     
     # Debug output for bias_breakdown

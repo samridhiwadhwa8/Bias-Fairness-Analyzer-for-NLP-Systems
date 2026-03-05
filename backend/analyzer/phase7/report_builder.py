@@ -358,42 +358,10 @@ class ReportBuilder:
                     elements.append(img)
                 elements.append(Spacer(1, 0.2 * inch))
             
-            # === RISK INTELLIGENCE ===
+            # === MISSING VALUES ANALYSIS ===
             elements.append(Spacer(1, 0.4 * inch))
-            elements.append(Paragraph("Risk Intelligence", styles['Heading1']))
+            elements.append(Paragraph("Data Quality Analysis", styles['Heading1']))
             elements.append(Spacer(1, 0.2 * inch))
-            
-            # Extract Phase 6 data using safe access
-            phase6_results = report.get("phase6", {})
-            profile = phase6_results.get("profile", {})
-            percentile = phase6_results.get("risk_percentile", None)
-            position = phase6_results.get("market_position", 'N/A')
-            
-            # Extract profile data safely
-            fingerprint = profile.get("fingerprint", "Unavailable")
-            domain = profile.get("domain", "Unavailable")
-            task = profile.get("task", "Unavailable")
-            size = profile.get("size", "Unavailable")
-            balance = profile.get("balance", "Unavailable")
-            
-            # Risk intelligence as text instead of table
-            elements.append(Paragraph("Risk Intelligence Assessment", styles['Heading2']))
-            elements.append(Spacer(1, 0.1 * inch))
-            
-            if percentile is not None:
-                risk_text = f"""The dataset fingerprint '{fingerprint}' indicates it belongs to the {domain} domain with a {task} task type. 
-                Classified as {size} size with {balance} balance characteristics, the dataset is positioned at the {percentile}th risk percentile within the ecosystem. 
-                This placement indicates the dataset is '{position}' compared to similar datasets, suggesting {'minimal risk concerns' if percentile < 25 else 'moderate risk considerations' if percentile < 75 else 'significant risk factors requiring attention'}."""
-            else:
-                risk_text = f"""The dataset fingerprint '{fingerprint}' indicates it belongs to the {domain} domain with a {task} task type. 
-                Classified as {size} size with {balance} balance characteristics, the dataset's risk positioning within the ecosystem is currently being analyzed. 
-                Market analysis indicates the dataset is '{position}' compared to similar datasets."""
-            
-            elements.append(Paragraph(risk_text, styles['Normal']))
-            elements.append(Spacer(1, 0.3 * inch))
-            
-            # Add Confusion Matrix with Missing Values Heatmap instead of Risk Percentile
-            elements.append(Paragraph("Missing Values Analysis", styles['Heading2']))
             elements.append(Spacer(1, 0.1 * inch))
             elements.append(Paragraph("This heatmap visualization shows the distribution of missing values across different features in the dataset, helping identify patterns of data completeness and potential data quality issues that may impact model performance.", styles['Normal']))
             elements.append(Spacer(1, 0.1 * inch))
