@@ -1,19 +1,5 @@
 # Bias Analyzer Backend - Modular Architecture
 
-## 📁 Project Structure
-
-```
-backend/
-├── app.py              # Main FastAPI application and routes
-├── dataset_engine.py    # Dataset analysis and profiling
-├── model_engine.py     # ML model training and evaluation  
-├── bias_engine.py      # Bias and fairness detection
-├── recommender_engine.py # Dataset recommendations and risk assessment
-├── utils.py            # Common utility functions
-├── requirements.txt    # Python dependencies
-└── README.md          # This file
-```
-
 ## 🚀 Module Responsibilities
 
 ### **app.py** - Main Application
@@ -23,24 +9,7 @@ backend/
 - Error handling and logging
 - **Orchestrates all engines**
 
-### **dataset_engine.py** - Dataset Analysis (Phase 1)
-- Data loading and validation
-- Basic statistics and profiling
-- Data quality assessment
-- Sensitive column detection
-- Feature correlation analysis
-- Data type classification
-- Metadata extraction and caching
-
-### **model_engine.py** - ML Training (Phase 3)
-- Intelligent column detection (text vs categorical)
-- Dataset type classification
-- Model selection logic (text → Naive Bayes, categorical → Random Forest)
-- Feature engineering (TF-IDF, One-Hot Encoding)
-- Model training and evaluation
-- Performance metrics calculation
-
-### **bias_engine.py** - Bias Analysis (Phase 4)
+### Bias Analysis (Phase 4)
 - **Demographic bias detection** (gender, race, age, socioeconomic)
 - **Linguistic bias detection**:
   - 🧪 Toxicity score
@@ -50,25 +19,21 @@ backend/
 - Overall risk assessment
 - Mitigation recommendations
 
-### **recommender_engine.py** - Recommendations (Phase 2)
+### Recommendations (Phase 2)
 - Dataset use case recommendations
 - Proactive risk assessment
 - Data quality insights
 - Improvement suggestions
 - Risk factor analysis
 
-### **utils.py** - Common Utilities
+### Common Utilities
 - File loading and validation
 - Multiple encoding support
 - Data type conversion for JSON
 - Standardized response formatting
 - Error handling helpers
 
-## 🔄 Data Flow
 
-```
-Upload → app.py → dataset_engine.py → model_engine.py → bias_engine.py → recommender_engine.py → Response
-```
 
 ## 🎯 Key Benefits
 
